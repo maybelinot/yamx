@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+
+# Distribution / packaging
+src
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+
+*.egg-info/
+.installed.cfg
+*.egg
+
+poetry.lock
+
+
+# IDEs/Editors
+.idea/
+.vscode/
+*.iml
+
+# Mac OS
+.DS_Store
+
+# pyenv
+.python-version
+
