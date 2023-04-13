@@ -1,6 +1,6 @@
 
 
-# YAMJinX 
+# YAMJinX
 
 extend your YAML configuration with Jinja conditional expressions
 
@@ -10,7 +10,7 @@ extend your YAML configuration with Jinja conditional expressions
 
 Current version is useful only for linting of existing configs
 
-1. Define configuration with conditional block  
+1. Define configuration with conditional block
 
     ```yaml
     config:

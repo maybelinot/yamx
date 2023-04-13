@@ -1,0 +1,10 @@
+# flake8 does not support pyproject.toml configuration
+[flake8]
+ignore =
+	E203
+	# E203: whitespace before, conflicting with black style
+	E231
+	# E231: whitespace after, conflicting with black style
+	W503
+	# W503: line break before binary operator
+max-line-length = 100
