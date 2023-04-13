@@ -28,5 +28,12 @@ jobs:
     - uses: snok/install-poetry@v1
     - name: Install poetry dependencies
       run: poetry install --no-interaction --no-root --with test
-    - name: Test with pytest
+    - name: Run pytest
       run: poetry run make test
+    - name: Run pytest with coverage results
+      run: poetry run make test-with-coverage
+    - name: Pytest coverage comment
+      uses: MishaKav/pytest-coverage-comment@main
+      with:
+        pytest-coverage-path: ./pytest-coverage.txt
+        junitxml-path: ./pytest.xml

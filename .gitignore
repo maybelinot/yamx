@@ -37,3 +37,9 @@ poetry.lock
 
 # pyenv
 .python-version
+
+# testing
+
+.coverage
+pytest-coverage.txt
+pytest.xml

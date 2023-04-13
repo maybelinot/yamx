@@ -38,7 +38,7 @@ test:
 	$(TEST_RUN)
 
 test-with-coverage:
-	$(TEST_RUN) --cov=yamjinx --cov-report xml:coverage.xml
+	$(TEST_RUN) --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=yamjinx | tee pytest-coverage.txt
 
 test-with-coverage-html:
 	$(TEST_RUN) --cov=yamjinx --cov-report=html
