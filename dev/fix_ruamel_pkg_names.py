@@ -5,7 +5,6 @@ Workaround for poetry install to be able to install ruamel.yaml library
 and at same time we can still keep using pip-compile and output requirement txt files
 """
 
-import glob
 import sys
 
 TO_BE_REPLACED = {

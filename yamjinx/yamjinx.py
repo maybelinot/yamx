@@ -290,7 +290,9 @@ def parse_jinja(
     return processed
 
 
-def _process_jinja_if_node(jinja_ast: nodes.If, typ: str = None) -> str:
+def _process_jinja_if_node(
+    jinja_ast: nodes.If, typ: Optional[ToggledBlockType] = None
+) -> str:
     toggle_name, toggle_value = _extract_toggle_from_if_node(jinja_ast)
     if_data = "".join(map(parse_jinja, jinja_ast.body))
 
@@ -375,11 +377,15 @@ def _extract_toggle(toggles: Set[str], v: Any) -> Set[str]:
 
 
 class ToggledMap(CommentedMap):
-    def __init__(self, typ: str = None, toggles: Mapping[str, bool] = None):
+    def __init__(
+        self,
+        typ: Optional[ToggledBlockType] = None,
+        toggles: Optional[Mapping[str, bool]] = None,
+    ):
         super().__init__()
         self.yaml_set_tag("tag:yaml.org,2002:map")
         self._typ = typ
-        self._toggles = toggles or {}
+        self._toggles = toggles or Map()
 
     @property
     def toggles(self) -> Set[str]:
@@ -525,6 +531,7 @@ class ToggledGroup:
     ) -> "ToggledGroup":
         if typ is ToggledBlockType.elif_:
             # TODO: validate toggle names and values uniqueness
+            assert isinstance(toggled_group.elif_bodies, tuple)
             elif_groups = toggled_group.elif_bodies + (
                 cls(body=item, toggles_=toggles, elif_bodies=None),
             )
@@ -578,7 +585,9 @@ def _render_map_comments(
         else:
             if_comment = IF_NOT_TEMPLATE.format(toggle_key)
 
-        to_render = []
+        to_render: List[
+            Tuple[Union[ToggledMap, ToggledSeq], Optional[str], Optional[str]]
+        ] = []
 
         # in case we have only if body
         if toggled_group.else_body is None and not toggled_group.elif_bodies:
@@ -679,7 +688,9 @@ def _render_seq_comments(
         else:
             if_comment = IF_NOT_TEMPLATE.format(toggle_key)
 
-        to_render = []
+        to_render: List[
+            Tuple[Union[ToggledMap, ToggledSeq], Optional[str], Optional[str]]
+        ] = []
         # in case we have only if body
         if item.else_body is None and not item.elif_bodies:
             # TODO: create nice wrapper for this structure of
@@ -689,6 +700,7 @@ def _render_seq_comments(
             to_render.append((item.body, if_comment, None))
 
         # render elif blocks
+        assert item.elif_bodies is not None
         elif_bodies_count = len(item.elif_bodies)
         for idx, elif_body in enumerate(item.elif_bodies):
             ((toggle_key, toggle_value),) = elif_body.toggles_.items()
@@ -843,6 +855,7 @@ def _parse_toggled_map_data(mapping: ToggledMap) -> ToggledMap:
         # remember prev element for following iterations
         prev_item = new_item
 
+    assert isinstance(prev_item, tuple)
     (key, value) = prev_item
     new_map[key] = value
     return new_map
@@ -1025,7 +1038,7 @@ def _render_toggle_data_map(
 
 def _annotate_commented_map_scalar_item(
     commented_data: Union[CommentedMap, CommentedSeq],
-    data_key: str,
+    data_key: Union[str, int],
     before: Optional[str],
     after: Optional[str],
     indent: int,
@@ -1340,7 +1353,11 @@ def _annotate_commented_seq_commented_item(
 
 
 def _annotate_commented_seq_scalar_item(
-    cs: CommentedSeq, item_idx: int, before: str, after: str, indent: int
+    cs: CommentedSeq,
+    item_idx: int,
+    before: Optional[str],
+    after: Optional[str],
+    indent: int,
 ) -> None:
     """Annotating simple scalar value
     Comment annotations are attached to parent object ca.items structure
