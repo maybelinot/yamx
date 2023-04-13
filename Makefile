@@ -42,3 +42,8 @@ test-with-coverage:
 
 test-with-coverage-html:
 	$(TEST_RUN) --cov=yamjinx --cov-report=html
+
+update-deps:
+	poetry update
+	# Workaround for poetry install to be able to install ruamel.yaml library
+	./dev/fix_ruamel_pkg_names.py poetry.lock
