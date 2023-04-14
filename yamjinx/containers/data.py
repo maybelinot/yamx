@@ -6,11 +6,6 @@ from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 from yamjinx.constants import ToggledBlockType
 
-# def _extract_toggle(toggles: Set[str], v: Any) -> Set[str]:
-#     if isinstance(v, (ToggledMap, ToggledSeq, ToggledGroup)):
-#         return toggles | v.toggles
-#     return toggles
-
 
 @frozen
 class CmpValue:
@@ -34,22 +29,11 @@ class ToggledMap(CommentedMap):
         self._typ = typ
         self._toggles = toggles or Map()
 
-    # @property
-    # def toggles(self) -> Set[str]:
-    #     return reduce(_extract_toggle, self.values(), set(self._toggles))
-
 
 class ToggledSeq(CommentedSeq):
     def __init__(self) -> None:
         self.yaml_set_tag("tag:yaml.org,2002:seq")
         super().__init__()
-
-    # @property
-    # def toggles(self) -> Set[str]:
-    #     return reduce(_extract_toggle, self, set())
-
-    # alternative way to register representer (not needed when @yaml.register_class is used)
-    # yaml.representer.add_representer(ToggledSeq, ToggledSeq.to_yaml)
 
 
 @frozen
@@ -67,19 +51,6 @@ class ToggledGroup:
             return "".join(sorted(self.toggles_)) < "".join(sorted(other.toggles_))
         else:
             return False
-
-    # @property
-    # def toggles(self) -> Set[str]:
-    #     toggles = set(self.toggles_)
-    #     if isinstance(self.body, (ToggledMap, ToggledSeq)):
-    #         toggles |= self.body.toggles
-    #     if isinstance(self.else_body, (ToggledMap, ToggledSeq)):
-    #         toggles |= self.else_body.toggles
-
-    #     if self.elif_bodies is None:
-    #         return toggles
-
-    #     return reduce(_extract_toggle, self.elif_bodies, toggles)
 
     @classmethod
     def from_toggle_group_and_item(
