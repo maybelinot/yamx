@@ -1109,27 +1109,20 @@ def _set_after_map_comment(cm, after: str, indent: int) -> None:
             cm.ca.items[last_map_key] = [None, None, after_comment, None]
 
 
-def _merge_comments(
-    comment1: CommentToken, comment2: CommentToken, typ: str = "after"
-) -> CommentToken:
+def _merge_comments(comment1: CommentToken, comment2: CommentToken) -> CommentToken:
     """Used to merge 2 comments into a single CommentToken object
     NOTE: only single-line comments are supported
     """
-    indent = min(comment1.column, comment1.column)
+    assert comment1.value.startswith("\n")
+    assert comment2.value.startswith("\n")
+
+    indent = min(comment1.column, comment2.column)
     mark = CommentMark(indent)
-    if typ == "before":
-        return CommentToken(
-            (comment1.value + f"{indent * ' '}{comment2.value}"),
-            mark,
-        )
-    else:
-        return CommentToken(
-            (
-                f"{(comment1.column - indent) * ' '}{comment1.value}"
-                f"{(comment2.column - indent) * ' '}{comment2.value}"
-            ),
-            mark,
-        )
+
+    return CommentToken(
+        f"{comment1.value}{comment2.value}",
+        mark,
+    )
 
 
 def _render_toggle_data_seq(
