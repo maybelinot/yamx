@@ -9,11 +9,11 @@ def test_default():
 
 
 def test_custom_yaml():
-    _ = YAMJinX(yaml=YAML(typ=["rt", "string"]))
+    YAMJinX(yaml=YAML(typ=["rt", "string"]))
 
 
 def test_missing_rt_constructor():
     with pytest.raises(
         AssertionError, match="RoundTripLoader/RoundTripDumper is required"
     ):
-        _ = YAMJinX(yaml=YAML(typ=["string"]))
+        YAMJinX(yaml=YAML(typ=["string"]))
