@@ -1,13 +1,25 @@
+import io
 from typing import List, Optional, Tuple, Union
-from jinja2.sandbox import SandboxedEnvironment
+
 from jinja2 import nodes
-from yamjinx.constants import NON_EXISTING_STR, TOGGLE_KEY_PREFIX, TYPE_SEP, ToggledBlockType, UNIQUE_TOGGLE_CNT, TOGGLE_SEP, TOGGLE_VALUE_SETTER, TOGGLE_TAG_PREFIX
+from jinja2.sandbox import SandboxedEnvironment
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
-import io
 
+from yamjinx.constants import (
+    NON_EXISTING_STR,
+    TOGGLE_KEY_PREFIX,
+    TOGGLE_SEP,
+    TOGGLE_TAG_PREFIX,
+    TOGGLE_VALUE_SETTER,
+    TYPE_SEP,
+    ToggledBlockType,
+)
+
+UNIQUE_TOGGLE_CNT: int = 0
 
 yaml = YAML()
+
 
 def translate_config_flags(data: str) -> str:
     """Translates config flags defined with jinja syntax into yaml-compatible configuration.
@@ -74,8 +86,6 @@ def translate_config_flags(data: str) -> str:
     return jinja_yaml_ast
 
 
-
-
 def parse_jinja(
     jinja_ast: Union[nodes.Template, nodes.Output, nodes.If, nodes.TemplateData]
 ) -> str:
@@ -95,6 +105,7 @@ def parse_jinja(
         raise TypeError(f"Unexpected jinja ast node of type {type(jinja_ast)}.")
 
     return processed
+
 
 # _remove_suffix to remove any jinja syntax comments leftovers (let's hope it will not kick us back)
 # NOTE: only works when jinja blocks defined with a space between `#` and a block
@@ -182,4 +193,3 @@ def process_conditions(
     res = res.replace("\n", f"\n{space_indent}")
     # add indentation in the beginning
     return f"{space_indent}{res}".rstrip()
-
