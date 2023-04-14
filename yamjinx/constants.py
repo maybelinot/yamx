@@ -1,5 +1,6 @@
-from typing import Final
 from enum import Enum
+from typing import Final
+
 
 class ToggledBlockType(Enum):
     if_ = "if"
@@ -27,7 +28,7 @@ ENDIF_COMMENT: Final[str] = "{% endif %}"
 
 # toggled structure key constants
 TOGGLE_KEY_PREFIX: Final[str] = "__toggled__"
-UNIQUE_TOGGLE_CNT: int = 0
+
 # toggled structure tag constants
 TOGGLE_TAG_PREFIX: Final[str] = "!toggled_"
 TYPE_SEP: Final[str] = "@"
@@ -35,5 +36,3 @@ TOGGLE_SEP: Final[str] = "&"
 TOGGLE_VALUE_SETTER: Final[str] = "="
 # toggled key deduplication
 DEDUPLICATOR: Final[str] = "__deduplicator__"
-UNIQUE_CNT: int = 0
-CONSTRUCTOR_CNT: int = 0
