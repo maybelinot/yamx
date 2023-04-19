@@ -2,12 +2,10 @@ import io
 from typing import List, Optional, Tuple, Union
 
 from jinja2 import nodes
-from jinja2.sandbox import SandboxedEnvironment
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 from yamjinx.constants import (
-    NON_EXISTING_STR,
     TOGGLE_KEY_PREFIX,
     TOGGLE_SEP,
     TOGGLE_TAG_PREFIX,
@@ -15,6 +13,7 @@ from yamjinx.constants import (
     TYPE_SEP,
     ToggledBlockType,
 )
+from yamjinx.loader.utils import get_jinja_env
 
 UNIQUE_TOGGLE_CNT: int = 0
 
@@ -69,17 +68,7 @@ def translate_config_flags(data: str) -> str:
         '''
 
     """
-    env = SandboxedEnvironment(
-        # variable parsing is disabled this way
-        variable_start_string=NON_EXISTING_STR,
-        variable_end_string=NON_EXISTING_STR,
-        # yaml parsing relies on this configuration
-        trim_blocks=True,
-    )
-    # resetting filters and globals to limit its usage
-    env.filters = {}
-    env.globals = {}
-
+    env = get_jinja_env()
     jinja_ast = env.parse(data)
     jinja_yaml_ast = parse_jinja(jinja_ast)
 
