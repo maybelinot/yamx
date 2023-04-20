@@ -1,7 +1,8 @@
 import re
 from functools import partial
-from typing import Optional
+from typing import Any, Dict, Optional
 
+from jinja2 import meta
 from ruamel.yaml import YAML, RoundTripConstructor, RoundTripRepresenter
 
 from yamjinx.constants import (
@@ -21,6 +22,7 @@ from yamjinx.containers import (
 )
 from yamjinx.loader import translate_config_flags, validate_content
 from yamjinx.loader.grouper import group_conditional_blocks
+from yamjinx.loader.utils import get_jinja_env
 from yamjinx.representer import (
     translate_conditional_map_to_yaml,
     translate_conditional_seq_to_yaml,
@@ -126,6 +128,22 @@ class YAMJinX:
         self.yaml.dump(
             data._data, stream, transform=self._remove_field_names_deduplicator
         )
+
+    def resolve(self, data: ConditionalData, context: Dict[str, Any]) -> Any:
+        env = get_jinja_env()
+        try:
+            ast = env.parse(data)
+        except Exception as e:
+            raise Exception("Failed to parse jinja syntax while resolving.") from e
+
+        missing_variables = meta.find_undeclared_variables(ast) - set(context.keys())
+        if missing_variables:
+            raise Exception(
+                f"Following context variables are not defined: {missing_variables}"
+            )
+
+        template = env.from_string(ast)
+        return template.render(**context)
 
     def dump_to_string(self, data, **kwargs) -> str:
         raw_data = self.yaml.dump_to_string(data._data, **kwargs)
