@@ -26,6 +26,9 @@ ELIF_NOT_TEMPLATE: Final[str] = '{{% elif not defines.get("{}") %}}'
 ELSE_COMMENT: Final[str] = "{% else %}"
 ENDIF_COMMENT: Final[str] = "{% endif %}"
 
+IF_CONDITION_TEMPLATE: Final[str] = "{{% if {} %}}"
+ELIF_CONDITION_TEMPLATE: Final[str] = "{{% elif {} %}}"
+
 # toggled structure key constants
 TOGGLE_KEY_PREFIX: Final[str] = "__toggled__"
 

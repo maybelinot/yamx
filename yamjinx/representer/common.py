@@ -4,14 +4,12 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 from yamjinx.constants import (
-    ELIF_NOT_TEMPLATE,
-    ELIF_TEMPLATE,
+    ELIF_CONDITION_TEMPLATE,
     ELSE_COMMENT,
     ENDIF_COMMENT,
-    IF_NOT_TEMPLATE,
-    IF_TEMPLATE,
+    IF_CONDITION_TEMPLATE,
 )
-from yamjinx.containers.data import CmpValue, ToggledGroup, ToggledMap, ToggledSeq
+from yamjinx.containers.data import CmpValue, ConditionalGroup, ToggledMap, ToggledSeq
 from yamjinx.containers.settings import IndentConfig
 from yamjinx.representer.rendering import render_toggle_data_map, render_toggle_data_seq
 
@@ -37,7 +35,7 @@ def translate_conditional_map_to_commented_map(
             sorted(
                 data.items(),
                 key=lambda i: i[1]
-                if isinstance(i[1], ToggledGroup)
+                if isinstance(i[1], ConditionalGroup)
                 else CmpValue(i[0]),
             )
         )
@@ -75,7 +73,7 @@ def _render_map_comments(
         **kwargs,
     }
     for item in data.items():
-        if not isinstance(item[1], ToggledGroup):
+        if not isinstance(item[1], ConditionalGroup):
             key, value = item
             # translate inner Toggled objects first
             if isinstance(value, ToggledMap):
@@ -95,12 +93,8 @@ def _render_map_comments(
             cm[key] = value
             continue
         (_, toggled_group) = item
-        ((toggle_key, toggle_value),) = toggled_group.toggles_.items()
 
-        if toggle_value:
-            if_comment = IF_TEMPLATE.format(toggle_key)
-        else:
-            if_comment = IF_NOT_TEMPLATE.format(toggle_key)
+        if_comment = IF_CONDITION_TEMPLATE.format(toggled_group.condition)
 
         to_render: List[
             Tuple[Union[ToggledMap, ToggledSeq], Optional[str], Optional[str]]
@@ -117,13 +111,7 @@ def _render_map_comments(
         # render elif blocks
         elif_bodies_count = len(toggled_group.elif_bodies)
         for idx, elif_body in enumerate(toggled_group.elif_bodies):
-            ((toggle_key, toggle_value),) = elif_body.toggles_.items()
-            # select template based on toggle value
-            if toggle_value:
-                before_comment = ELIF_TEMPLATE.format(toggle_key)
-            else:
-                before_comment = ELIF_NOT_TEMPLATE.format(toggle_key)
-
+            before_comment = ELIF_CONDITION_TEMPLATE.format(elif_body.condition)
             # set after comment based if it's last elif block and
             # there is no else statement in the toggled group
             if (idx == elif_bodies_count - 1) and toggled_group.else_body is None:
@@ -196,7 +184,7 @@ def _render_seq_comments(
         **kwargs,
     }
     for item in data:
-        if not isinstance(item, ToggledGroup):
+        if not isinstance(item, ConditionalGroup):
             # TODO: propagate original comments
             if isinstance(item, ToggledMap):
                 # add extra indentation for inner map structures
@@ -217,11 +205,7 @@ def _render_seq_comments(
             cs.append(item)
             continue
 
-        ((toggle_key, toggle_value),) = item.toggles_.items()
-        if toggle_value:
-            if_comment = IF_TEMPLATE.format(toggle_key)
-        else:
-            if_comment = IF_NOT_TEMPLATE.format(toggle_key)
+        if_comment = IF_CONDITION_TEMPLATE.format(item.condition)
 
         to_render: List[
             Tuple[Union[ToggledMap, ToggledSeq], Optional[str], Optional[str]]
@@ -238,14 +222,7 @@ def _render_seq_comments(
         assert item.elif_bodies is not None
         elif_bodies_count = len(item.elif_bodies)
         for idx, elif_body in enumerate(item.elif_bodies):
-            ((toggle_key, toggle_value),) = elif_body.toggles_.items()
-
-            # select comment template to use based on toggle value
-            if toggle_value:
-                before_comment = ELIF_TEMPLATE.format(toggle_key)
-            else:
-                before_comment = ELIF_NOT_TEMPLATE.format(toggle_key)
-
+            before_comment = ELIF_CONDITION_TEMPLATE.format(elif_body.condition)
             # set after comment if it's last elif block and else block is
             # not present in the toggled group
             if (idx == elif_bodies_count - 1) and item.else_body is None:
