@@ -11,6 +11,10 @@ def get_jinja_env():
         variable_end_string=NON_EXISTING_STR,
         # yaml parsing relies on this configuration
         trim_blocks=True,
+        # strips leading spaces and tabs before jinja block
+        lstrip_blocks=True,
+        # keep new line at the end of the file
+        keep_trailing_newline=True,
     )
     env.filters = {}
     env.globals = {}
