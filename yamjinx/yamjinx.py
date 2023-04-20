@@ -1,8 +1,7 @@
 import re
 from functools import partial
-from typing import Any, Optional, Set
+from typing import Optional
 
-from attr import frozen
 from ruamel.yaml import YAML, RoundTripConstructor, RoundTripRepresenter
 
 from yamjinx.constants import (
@@ -13,27 +12,19 @@ from yamjinx.constants import (
     YAML_MAP_TAG,
     YAML_SEQ_TAG,
 )
-from yamjinx.containers import ConditionalNode, IndentConfig, ToggledMap, ToggledSeq
-from yamjinx.extra import extract_toggles
+from yamjinx.containers import (
+    ConditionalNode,
+    IndentConfig,
+    ToggledData,
+    ToggledMap,
+    ToggledSeq,
+)
 from yamjinx.loader import translate_config_flags, validate_content
 from yamjinx.loader.grouper import group_toggled_data
 from yamjinx.representer import (
     translate_conditional_map_to_yaml,
     translate_conditional_seq_to_yaml,
 )
-
-# TODO: logic agnostic condition processing
-
-
-@frozen
-class ToggledData:
-    """Wrapper for loaded data"""
-
-    _data: Any
-
-    @property
-    def toggles(self) -> Set[str]:
-        return extract_toggles(self._data)
 
 
 class ToggledRoundTripConstructor(RoundTripConstructor):

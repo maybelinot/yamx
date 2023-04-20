@@ -1,6 +1,7 @@
 from yamjinx.containers.data import (
     ConditionalGroup,
     ConditionalNode,
+    ToggledData,
     ToggledMap,
     ToggledSeq,
 )
@@ -10,6 +11,7 @@ __all__ = [
     "ConditionalNode",
     "IndentConfig",
     "ConditionalGroup",
+    "ToggledData",
     "ToggledMap",
     "ToggledSeq",
 ]
