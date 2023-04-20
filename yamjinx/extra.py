@@ -1,10 +1,11 @@
 # not very supported pieces of functionality
 
-from typing import Any, Set, Tuple
+from typing import Any, Optional, Set
 
 from jinja2 import nodes
 
-from yamjinx.containers.data import ToggledGroup, ToggledMap, ToggledSeq
+from yamjinx.containers.data import ConditionalGroup, ToggledMap, ToggledSeq
+from yamjinx.loader.utils import get_jinja_env
 
 
 def extract_toggles(obj: Any, toggles: Set[str] = set()):
@@ -14,8 +15,8 @@ def extract_toggles(obj: Any, toggles: Set[str] = set()):
     elif isinstance(obj, ToggledSeq):
         for value in obj:
             toggles |= extract_toggles(value)
-    elif isinstance(obj, ToggledGroup):
-        toggles |= set(obj.toggles_)
+    elif isinstance(obj, ConditionalGroup):
+        toggles |= _extract_toggles_from_condition(obj.condition)
         toggles |= extract_toggles(obj.body)
         toggles |= extract_toggles(obj.else_body)
         for elif_body in obj.elif_bodies or []:
@@ -26,8 +27,19 @@ def extract_toggles(obj: Any, toggles: Set[str] = set()):
     return toggles
 
 
-def _extract_toggle_from_if_node(if_node) -> Tuple[str, bool]:
+def _extract_toggles_from_condition(condition: Optional[str]) -> Set[str]:
+    """This method works only for particular condition format"""
+    if condition is None:
+        return set()
+    env = get_jinja_env()
+    jinja_ast = env.parse(f"{{% if {condition} %}}{{% endif %}}")
+    return {
+        _extract_toggle_from_if_node(jinja_ast.body[0].test),
+    }
+
+
+def _extract_toggle_from_if_node(if_test_node: nodes.Call) -> str:
     # we have negation in condition
-    if isinstance(if_node.test, nodes.Not):
-        return if_node.test.node.args[0].value, False
-    return if_node.test.args[0].value, True
+    if isinstance(if_test_node, nodes.Not):
+        return if_test_node.node.args[0].value
+    return if_test_node.args[0].value
