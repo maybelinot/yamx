@@ -4,15 +4,15 @@ from typing import Any, Optional, Set
 
 from jinja2 import nodes
 
-from yamjinx.containers.data import ConditionalGroup, ToggledMap, ToggledSeq
+from yamjinx.containers.data import ConditionalGroup, ConditionalMap, ConditionalSeq
 from yamjinx.loader.utils import get_jinja_env
 
 
 def extract_toggles(obj: Any, toggles: Set[str] = set()):
-    if isinstance(obj, ToggledMap):
+    if isinstance(obj, ConditionalMap):
         for value in obj.values():
             toggles |= extract_toggles(value)
-    elif isinstance(obj, ToggledSeq):
+    elif isinstance(obj, ConditionalSeq):
         for value in obj:
             toggles |= extract_toggles(value)
     elif isinstance(obj, ConditionalGroup):

@@ -1,7 +1,10 @@
 import io
+
 import pytest
+
 from yamjinx import YAMJinX
 from yamjinx.extra import extract_toggles
+
 
 @pytest.mark.parametrize(
     "raw_config, expected_toggles",

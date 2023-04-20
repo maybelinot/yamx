@@ -9,13 +9,18 @@ from yamjinx.constants import (
     ENDIF_COMMENT,
     IF_CONDITION_TEMPLATE,
 )
-from yamjinx.containers.data import CmpValue, ConditionalGroup, ToggledMap, ToggledSeq
+from yamjinx.containers.data import (
+    CmpValue,
+    ConditionalGroup,
+    ConditionalMap,
+    ConditionalSeq,
+)
 from yamjinx.containers.settings import IndentConfig
-from yamjinx.representer.rendering import render_toggle_data_map, render_toggle_data_seq
+from yamjinx.representer.rendering import render_conditional_map, render_conditional_seq
 
 
 def translate_conditional_map_to_commented_map(
-    data: ToggledMap,
+    data: ConditionalMap,
     sort_keys: bool,
     indent_cfg: IndentConfig,
     indent: int,
@@ -39,7 +44,7 @@ def translate_conditional_map_to_commented_map(
                 else CmpValue(i[0]),
             )
         )
-        new_data = ToggledMap()
+        new_data = ConditionalMap()
         new_data.update(sorted_data)
         data.copy_attributes(data)
     else:
@@ -56,10 +61,10 @@ def translate_conditional_map_to_commented_map(
 
 
 def _render_map_comments(
-    data: ToggledMap, indent: int, indent_cfg: IndentConfig, **kwargs
+    data: ConditionalMap, indent: int, indent_cfg: IndentConfig, **kwargs
 ) -> CommentedMap:
     """
-    Converts ToggledMap structure into CommentedMap
+    Converts ConditionalMap structure into CommentedMap
     rendering all sequence comment
 
     kwargs contain parameters used to recursively render inner structures
@@ -67,7 +72,7 @@ def _render_map_comments(
     :param sort_keys: {bool}
     """
     cm = CommentedMap()
-    toggled_kwargs: Dict[str, Any] = {
+    conditional_kwargs: Dict[str, Any] = {
         "indent": indent,
         "indent_cfg": indent_cfg,
         **kwargs,
@@ -75,8 +80,8 @@ def _render_map_comments(
     for item in data.items():
         if not isinstance(item[1], ConditionalGroup):
             key, value = item
-            # translate inner Toggled objects first
-            if isinstance(value, ToggledMap):
+            # translate inner Conditional objects first
+            if isinstance(value, ConditionalMap):
                 # add extra indentation for inner map structures
                 value = translate_conditional_map_to_commented_map(
                     data=value,
@@ -84,7 +89,7 @@ def _render_map_comments(
                     indent_cfg=indent_cfg,
                     **kwargs,
                 )
-            elif isinstance(value, ToggledSeq):
+            elif isinstance(value, ConditionalSeq):
                 # don't increase indent for sequence within map, as comments
                 # are rendered on the same level
                 value = translate_conditional_seq_to_commented_seq(
@@ -92,49 +97,49 @@ def _render_map_comments(
                 )
             cm[key] = value
             continue
-        (_, toggled_group) = item
+        (_, conditional_group) = item
 
-        if_comment = IF_CONDITION_TEMPLATE.format(toggled_group.condition)
+        if_comment = IF_CONDITION_TEMPLATE.format(conditional_group.condition)
 
         to_render: List[
-            Tuple[Union[ToggledMap, ToggledSeq], Optional[str], Optional[str]]
+            Tuple[Union[ConditionalMap, ConditionalSeq], Optional[str], Optional[str]]
         ] = []
 
         # in case we have only if body
-        if toggled_group.else_body is None and not toggled_group.elif_bodies:
+        if conditional_group.else_body is None and not conditional_group.elif_bodies:
             # TODO: create nice wrapper for this structure of
             # tuple(data, comment_before, comment_after)
-            to_render.append((toggled_group.body, if_comment, ENDIF_COMMENT))
+            to_render.append((conditional_group.body, if_comment, ENDIF_COMMENT))
         else:
-            to_render.append((toggled_group.body, if_comment, None))
+            to_render.append((conditional_group.body, if_comment, None))
 
         # render elif blocks
-        elif_bodies_count = len(toggled_group.elif_bodies)
-        for idx, elif_body in enumerate(toggled_group.elif_bodies):
+        elif_bodies_count = len(conditional_group.elif_bodies)
+        for idx, elif_body in enumerate(conditional_group.elif_bodies):
             before_comment = ELIF_CONDITION_TEMPLATE.format(elif_body.condition)
             # set after comment based if it's last elif block and
-            # there is no else statement in the toggled group
-            if (idx == elif_bodies_count - 1) and toggled_group.else_body is None:
+            # there is no else statement in the conditional group
+            if (idx == elif_bodies_count - 1) and conditional_group.else_body is None:
                 after_comment = ENDIF_COMMENT
             else:
                 after_comment = None
 
             to_render.append((elif_body.body, before_comment, after_comment))
 
-        if toggled_group.else_body:
-            to_render.append((toggled_group.else_body, ELSE_COMMENT, ENDIF_COMMENT))
+        if conditional_group.else_body:
+            to_render.append((conditional_group.else_body, ELSE_COMMENT, ENDIF_COMMENT))
 
-        # render all toggled group blocks
+        # render all conditional group blocks
         for (data, before, after) in to_render:
 
             # resolve all inner structures first
             resolved_data = translate_conditional_map_to_commented_map(
-                data=data, **toggled_kwargs
+                data=data, **conditional_kwargs
             )
             # render comment on original CommentedSeq and CommentedMap objects
-            render_toggle_data_map(
+            render_conditional_map(
                 cm,
-                toggle_data=resolved_data,
+                data=resolved_data,
                 before=before,
                 after=after,
                 indent=indent,
@@ -145,7 +150,7 @@ def _render_map_comments(
 
 
 def translate_conditional_seq_to_commented_seq(
-    data: ToggledSeq,
+    data: ConditionalSeq,
     sort_keys: bool,
     indent_cfg: IndentConfig,
     indent: int,
@@ -166,10 +171,10 @@ def translate_conditional_seq_to_commented_seq(
 
 
 def _render_seq_comments(
-    data: ToggledSeq, indent: int, indent_cfg: IndentConfig, **kwargs
+    data: ConditionalSeq, indent: int, indent_cfg: IndentConfig, **kwargs
 ) -> CommentedSeq:
     """
-    Converts ToggledSeq structure into CommentedSeq
+    Converts ConditionalSeq structure into CommentedSeq
     rendering all sequence comment
 
     kwargs contain parameters used to recursively render inner structures
@@ -178,7 +183,7 @@ def _render_seq_comments(
     """
     cs = CommentedSeq()
 
-    toggled_kwargs: Dict[str, Any] = {
+    conditional_kwargs: Dict[str, Any] = {
         "indent": indent,
         "indent_cfg": indent_cfg,
         **kwargs,
@@ -186,7 +191,7 @@ def _render_seq_comments(
     for item in data:
         if not isinstance(item, ConditionalGroup):
             # TODO: propagate original comments
-            if isinstance(item, ToggledMap):
+            if isinstance(item, ConditionalMap):
                 # add extra indentation for inner map structures
                 item = translate_conditional_map_to_commented_map(
                     data=item,
@@ -194,7 +199,7 @@ def _render_seq_comments(
                     indent_cfg=indent_cfg,
                     **kwargs,
                 )
-            elif isinstance(item, ToggledSeq):
+            elif isinstance(item, ConditionalSeq):
                 # add extra indentation for inner seq structures
                 item = translate_conditional_seq_to_commented_seq(
                     data=item,
@@ -208,7 +213,7 @@ def _render_seq_comments(
         if_comment = IF_CONDITION_TEMPLATE.format(item.condition)
 
         to_render: List[
-            Tuple[Union[ToggledMap, ToggledSeq], Optional[str], Optional[str]]
+            Tuple[Union[ConditionalMap, ConditionalSeq], Optional[str], Optional[str]]
         ] = []
         # in case we have only if body
         if item.else_body is None and not item.elif_bodies:
@@ -224,7 +229,7 @@ def _render_seq_comments(
         for idx, elif_body in enumerate(item.elif_bodies):
             before_comment = ELIF_CONDITION_TEMPLATE.format(elif_body.condition)
             # set after comment if it's last elif block and else block is
-            # not present in the toggled group
+            # not present in the conditional group
             if (idx == elif_bodies_count - 1) and item.else_body is None:
                 after_comment = ENDIF_COMMENT
             else:
@@ -237,15 +242,15 @@ def _render_seq_comments(
             to_render.append((item.else_body, ELSE_COMMENT, ENDIF_COMMENT))
 
         # TODO: merge with map processing
-        # render all toggled group blocks
+        # render all conditional group blocks
         for (data, before, after) in to_render:
             # resolve all inner structures first
             resolved_data = translate_conditional_seq_to_commented_seq(
-                data=data, **toggled_kwargs
+                data=data, **conditional_kwargs
             )
-            render_toggle_data_seq(
+            render_conditional_seq(
                 cs,
-                toggle_data=resolved_data,
+                data=resolved_data,
                 before=before,
                 after=after,
                 # adding extra indent based on the offset of seq items
