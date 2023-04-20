@@ -1039,25 +1039,25 @@ a1: 2
     ],
 )
 def test_config_non_mutable(raw_config):
-    cyaml = YAMJinX(sort_keys=False)
-    _load_dump_and_compare(cyaml, raw_config)
+    yamx = YAMJinX(sort_keys=False)
+    _load_dump_and_compare(yamx, raw_config)
 
 
 @pytest.mark.parametrize(
     "raw_config",
     [
-        "key: !toggled_ 123",
+        "key: !conditional 123",
         "__deduplicator__: 123",
         "____THIS_DOESN'T_EXIST____: 123",
-        "__toggled__0: 123",
+        "__condition__0: 123",
     ],
 )
 def test_config_validate(raw_config):
     input_stream = io.StringIO(raw_config)
-    cyaml = YAMJinX(sort_keys=False)
+    yamx = YAMJinX(sort_keys=False)
 
     with pytest.raises(AssertionError):
-        cyaml.load(input_stream)
+        yamx.load(input_stream)
 
     input_stream.close()
 
@@ -1141,11 +1141,11 @@ params:
     ],
 )
 def test_config_indentation_settings(raw_config):
-    cyaml = YAMJinX(sort_keys=False)
+    yamx = YAMJinX(sort_keys=False)
 
-    cyaml.indent(mapping=4, sequence=4, offset=1)
+    yamx.indent(mapping=4, sequence=4, offset=1)
 
-    _load_dump_and_compare(cyaml, raw_config)
+    _load_dump_and_compare(yamx, raw_config)
 
 
 @pytest.mark.parametrize(
@@ -1224,14 +1224,14 @@ list:
     ],
 )
 def test_config_sort_keys(raw_config, expected):
-    cyaml = YAMJinX(sort_keys=True)
-    _load_dump_and_compare(cyaml, raw_config, expected)
+    yamx = YAMJinX(sort_keys=True)
+    _load_dump_and_compare(yamx, raw_config, expected)
 
 
 def test_constructor_instantiation():
-    cyaml1 = YAMJinX()
-    cyaml2 = YAMJinX()
+    yamx1 = YAMJinX()
+    yamx2 = YAMJinX()
 
-    cyaml1.yaml.constructor.add_custom_constructor("test_constructor", lambda: None)
-    assert "test_constructor" in cyaml1.yaml.constructor.yaml_constructors
-    assert "test_constructor" not in cyaml2.yaml.constructor.yaml_constructors
+    yamx1.yaml.constructor.add_custom_constructor("test_constructor", lambda: None)
+    assert "test_constructor" in yamx1.yaml.constructor.yaml_constructors
+    assert "test_constructor" not in yamx2.yaml.constructor.yaml_constructors

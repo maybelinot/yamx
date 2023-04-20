@@ -16,7 +16,7 @@ a: 1
 {% endif %}
 """,
             """
-__toggled__0: !conditional
+__condition__0: !conditional
   data:
     a: 1
   typ: if
@@ -37,22 +37,22 @@ a: 4
 {% endif %}
 """,
             """
-__toggled__0: !conditional
+__condition__0: !conditional
   data:
     a: 1
   typ: if
   condition: condition1
-__toggled__1: !conditional
+__condition__1: !conditional
   data:
     a: 2
   typ: elif
   condition: condition2
-__toggled__2: !conditional
+__condition__2: !conditional
   data:
     a: 3
   typ: elif
   condition: condition3
-__toggled__3: !conditional
+__condition__3: !conditional
   data:
     a: 4
   typ: else
@@ -112,6 +112,6 @@ __toggled__3: !conditional
         ),
     ],
 )
-@patch("yamjinx.loader.preprocessor.UNIQUE_TOGGLE_CNT", 0)
+@patch("yamjinx.loader.preprocessor.UNIQUE_CONDITION_CNT", 0)
 def test_translate_config_flags(raw_data, translated_data):
     assert translate_config_flags(raw_data) == translated_data

@@ -7,7 +7,7 @@ from yamjinx.constants import (
     CONDITIONAL_TAG,
     YAML_MAP_TAG,
     YAML_SEQ_TAG,
-    ToggledBlockType,
+    ConditionalBlockType,
 )
 
 
@@ -23,7 +23,7 @@ class CmpValue:
 
 
 @frozen
-class ToggledData:
+class ConditionalData:
     """Wrapper for loaded data"""
 
     _data: Any
@@ -33,7 +33,7 @@ class ToggledData:
         return self._data
 
 
-class ToggledMap(CommentedMap):
+class ConditionalMap(CommentedMap):
     def __init__(
         self,
     ):
@@ -41,18 +41,18 @@ class ToggledMap(CommentedMap):
         self.yaml_set_tag(YAML_MAP_TAG)
 
 
-class ToggledSeq(CommentedSeq):
+class ConditionalSeq(CommentedSeq):
     def __init__(self) -> None:
         self.yaml_set_tag(YAML_SEQ_TAG)
         super().__init__()
 
 
 @frozen
-class ConditionalNode:
+class ConditionalBlock:
     yaml_tag: ClassVar[str] = CONDITIONAL_TAG
 
     data: Any
-    typ: ToggledBlockType
+    typ: ConditionalBlockType
     condition: Optional[str]
 
     @classmethod
@@ -63,7 +63,7 @@ class ConditionalNode:
     def from_yaml(cls, constructor, node):
         data = CommentedMap()
         constructor.construct_mapping(node, data, deep=True)
-        data["typ"] = ToggledBlockType(data["typ"])
+        data["typ"] = ConditionalBlockType(data["typ"])
 
         return cls(**data)
 
@@ -72,13 +72,13 @@ class ConditionalNode:
 class ConditionalGroup:
     condition: Optional[str]
     # TODO: support scalars
-    body: Union[ToggledMap, ToggledSeq]
+    body: Union[ConditionalMap, ConditionalSeq]
     # elif_bodies is None to identify elif nodes that have only body filled
     elif_bodies: Optional[Tuple["ConditionalGroup", ...]] = tuple()
-    else_body: Optional[Union[ToggledMap, ToggledSeq]] = None
+    else_body: Optional[Union[ConditionalMap, ConditionalSeq]] = None
 
     def __lt__(self, other) -> bool:
-        # compare by toggle names
+        # compare by condition string
         if isinstance(other, ConditionalGroup):
             # we compare only "if" ConditionalGroup, not "else" (where condition can be empty)
             assert self.condition is not None and other.condition is not None
@@ -88,21 +88,21 @@ class ConditionalGroup:
 
     def with_conditional_block(
         self,
-        data: Union[ToggledMap, ToggledSeq],
-        typ: ToggledBlockType,
+        data: Union[ConditionalMap, ConditionalSeq],
+        typ: ConditionalBlockType,
         condition: Optional[str],
     ) -> "ConditionalGroup":
         """Extends conditional group with new elif/else conditional blocks"""
-        if typ is ToggledBlockType.elif_:
+        if typ is ConditionalBlockType.elif_:
             assert isinstance(self.elif_bodies, tuple)
             elif_groups = self.elif_bodies + (
                 ConditionalGroup(body=data, condition=condition, elif_bodies=None),
             )
             return evolve(self, elif_bodies=elif_groups)
-        elif typ is ToggledBlockType.else_:
+        elif typ is ConditionalBlockType.else_:
             assert (
                 self.else_body is None
             ), f"Cannot set else_body to {self}, else_body is not empty."
             return evolve(self, else_body=data)
         else:
-            raise ValueError(f"Unexpected toggled element of type {typ}")
+            raise ValueError(f"Unexpected conditional element of type {typ}")

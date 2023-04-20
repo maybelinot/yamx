@@ -5,14 +5,14 @@ from ruamel.yaml.error import CommentMark
 from ruamel.yaml.tokens import CommentToken
 
 from yamjinx.constants import DEDUPLICATOR
-from yamjinx.containers.data import ToggledMap
+from yamjinx.containers.data import ConditionalMap
 
 UNIQUE_CNT: int = 0
 
 
-def render_toggle_data_map(
+def render_conditional_map(
     cm: CommentedMap,
-    toggle_data: ToggledMap,
+    data: ConditionalMap,
     before: Optional[str],
     after: Optional[str],
     indent: int,
@@ -119,14 +119,14 @@ def render_toggle_data_map(
     global UNIQUE_CNT
 
     # TODO: return if empty
-    if len(toggle_data) == 0:
+    if len(data) == 0:
         raise NotImplementedError
 
     # TODO: move sorting to different place
     if sort_keys:
-        iter_data = enumerate(sorted(toggle_data.items(), key=lambda kv: kv[0]))
+        iter_data = enumerate(sorted(data.items(), key=lambda kv: kv[0]))
     else:
-        iter_data = enumerate(toggle_data.items())
+        iter_data = enumerate(data.items())
 
     for idx, (data_key, data_value) in iter_data:
         if data_key in cm:
@@ -140,15 +140,15 @@ def render_toggle_data_map(
             UNIQUE_CNT += 1
 
         # move prev comment annotation to cm
-        if prev_data_key in toggle_data.ca.items:
-            cm.ca.items.update({data_key: toggle_data.ca.items[prev_data_key]})
+        if prev_data_key in data.ca.items:
+            cm.ca.items.update({data_key: data.ca.items[prev_data_key]})
 
         if idx == 0:
             first_data_key = data_key
         cm.update({data_key: data_value})
 
     last_data_key = data_key
-    # when toggled block consist of multiple elements we need to
+    # when conditional block consist of multiple elements we need to
     # attach before and after comment to different items
 
     # first attaching before comment to the first added item
@@ -274,9 +274,9 @@ def _merge_comments(comment1: CommentToken, comment2: CommentToken) -> CommentTo
     )
 
 
-def render_toggle_data_seq(
+def render_conditional_seq(
     cs: CommentedSeq,
-    toggle_data: CommentedSeq,
+    data: CommentedSeq,
     before: Optional[str],
     after: Optional[str],
     indent: int,
@@ -398,19 +398,19 @@ def render_toggle_data_seq(
     """
 
     first_item_pos = len(cs)
-    last_item_pos = first_item_pos + len(toggle_data) - 1
+    last_item_pos = first_item_pos + len(data) - 1
 
     assert first_item_pos <= last_item_pos
 
     # NOTE: extend method will shift comment annotation of all comments with
     # ids higher than last element - we should extend first, annotate after
-    cs.extend(toggle_data)
+    cs.extend(data)
     # now we can extend cs.ca with annotation of newly added items
     # in order to do that we need to shift all indices by len of cs
     cs.ca.items.update(
-        {first_item_pos + key: comment for key, comment in toggle_data.ca.items.items()}
+        {first_item_pos + key: comment for key, comment in data.ca.items.items()}
     )
-    # when toggled block consist of multiple elements we need to
+    # when conditional block consists of multiple elements we need to
     # attach before and after comment to different items
 
     # first attaching before comment to the first added item

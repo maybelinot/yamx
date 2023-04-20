@@ -13,21 +13,21 @@ from yamjinx.constants import (
     YAML_SEQ_TAG,
 )
 from yamjinx.containers import (
-    ConditionalNode,
+    ConditionalBlock,
+    ConditionalData,
+    ConditionalMap,
+    ConditionalSeq,
     IndentConfig,
-    ToggledData,
-    ToggledMap,
-    ToggledSeq,
 )
 from yamjinx.loader import translate_config_flags, validate_content
-from yamjinx.loader.grouper import group_toggled_data
+from yamjinx.loader.grouper import group_conditional_blocks
 from yamjinx.representer import (
     translate_conditional_map_to_yaml,
     translate_conditional_seq_to_yaml,
 )
 
 
-class ToggledRoundTripConstructor(RoundTripConstructor):
+class ConditionalRoundTripConstructor(RoundTripConstructor):
     def __init__(self, *args, **kwargs):
         self.yaml_constructors = self.__class__.yaml_constructors.copy()
         self.yaml_multi_constructors = self.__class__.yaml_multi_constructors.copy()
@@ -40,7 +40,7 @@ class ToggledRoundTripConstructor(RoundTripConstructor):
         self.yaml_multi_constructors[tag] = constructor
 
 
-class ToggledRoundTripRepresenter(RoundTripRepresenter):
+class ConditionalRoundTripRepresenter(RoundTripRepresenter):
     def __init__(self, *args, **kwargs):
         self.yaml_representers = self.__class__.yaml_representers.copy()
         super().__init__(*args, **kwargs)
@@ -50,7 +50,7 @@ class ToggledRoundTripRepresenter(RoundTripRepresenter):
 
 
 class YAMJinX:
-    """Wrapper around ruamel loader that supports toggled functionality"""
+    """Wrapper around ruamel loader that supports conditional functionality"""
 
     def __init__(self, yaml: Optional[YAML] = None, sort_keys: bool = True):
         self.sort_keys = sort_keys
@@ -61,19 +61,19 @@ class YAMJinX:
             assert isinstance(yaml, YAML), "Ruamel yaml loader/dumper is required"
             assert "rt" in yaml.typ, "RoundTripLoader/RoundTripDumper is required"
 
-        yaml.Constructor = ToggledRoundTripConstructor
-        yaml.Representer = ToggledRoundTripRepresenter
+        yaml.Constructor = ConditionalRoundTripConstructor
+        yaml.Representer = ConditionalRoundTripRepresenter
         # replace default constructor of map and seq - we need to have custom object for
-        # each container to allow for toggled modification
+        # each container to allow for condition modification
         yaml.constructor.add_custom_constructor(YAML_MAP_TAG, _construct_map)
         yaml.constructor.add_custom_constructor(YAML_SEQ_TAG, _construct_seq)
-        # add constructor for conditional structures, toggle information is parsed out
-        # from the tag and saved as an attribute of ToggledMap object
-        yaml.register_class(ConditionalNode)
+        # add constructor for conditional structures, condition information is parsed out
+        # from the structure and saved as an attribute of ConditionalMap object
+        yaml.register_class(ConditionalBlock)
 
         self.yaml = yaml
 
-        # setup custom representer for ToggledMap and ToggledSeq objects
+        # setup custom representer for ConditionalMap and ConditionalSeq objects
         # and default indentation settings
         self.indent()
 
@@ -98,7 +98,7 @@ class YAMJinX:
 
     def _set_custom_representers(self) -> None:
         self.yaml.representer.add_custom_representer(
-            ToggledMap,
+            ConditionalMap,
             partial(
                 translate_conditional_map_to_yaml,
                 sort_keys=self.sort_keys,
@@ -106,7 +106,7 @@ class YAMJinX:
             ),
         )
         self.yaml.representer.add_custom_representer(
-            ToggledSeq,
+            ConditionalSeq,
             partial(
                 translate_conditional_seq_to_yaml,
                 sort_keys=self.sort_keys,
@@ -114,15 +114,15 @@ class YAMJinX:
             ),
         )
 
-    def load(self, stream) -> ToggledData:
+    def load(self, stream) -> ConditionalData:
         data = stream.read()
         validate_content(data)
         conf = translate_config_flags(data)
         data = self.yaml.load(conf)
-        grouped_data = group_toggled_data(data)
-        return ToggledData(grouped_data)
+        grouped_data = group_conditional_blocks(data)
+        return ConditionalData(grouped_data)
 
-    def dump(self, data: ToggledData, stream) -> None:
+    def dump(self, data: ConditionalData, stream) -> None:
         self.yaml.dump(
             data._data, stream, transform=self._remove_field_names_deduplicator
         )
@@ -139,8 +139,8 @@ class YAMJinX:
 
 def _construct_map(self, node):
     """Default constructor of map that instantiates custom
-    ToggledMap object instead of CommentedMap"""
-    data = ToggledMap()
+    ConditionalMap object instead of CommentedMap"""
+    data = ConditionalMap()
 
     yield data
     self.construct_mapping(node, data, deep=True)
@@ -149,8 +149,8 @@ def _construct_map(self, node):
 
 def _construct_seq(self, node):
     """Default constructor of seq that instantiates custom
-    ToggledSeq object instead of CommentedSeq"""
-    data = ToggledSeq()
+    ConditionalSeq object instead of CommentedSeq"""
+    data = ConditionalSeq()
 
     yield data
     data.extend(self.construct_rt_sequence(node, data))

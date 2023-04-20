@@ -1,10 +1,10 @@
 from typing import Any
 
 from yamjinx.constants import (
+    CONDITIONAL_KEY_PREFIX,
+    CONDITIONAL_TAG,
     DEDUPLICATOR,
     NON_EXISTING_STR,
-    TOGGLE_KEY_PREFIX,
-    TOGGLE_TAG_PREFIX,
 )
 
 
@@ -13,9 +13,9 @@ def validate_content(data: Any) -> None:
     assert all(
         value not in data
         for value in (
-            TOGGLE_KEY_PREFIX,
+            CONDITIONAL_KEY_PREFIX,
             NON_EXISTING_STR,
             DEDUPLICATOR,
-            TOGGLE_TAG_PREFIX,
+            CONDITIONAL_TAG,
         )
     )
