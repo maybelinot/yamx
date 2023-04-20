@@ -1,6 +1,8 @@
 # not very supported pieces of functionality
 
-from typing import Any, Set
+from typing import Any, Set, Tuple
+
+from jinja2 import nodes
 
 from yamjinx.containers.data import ToggledGroup, ToggledMap, ToggledSeq
 
@@ -22,3 +24,10 @@ def extract_toggles(obj: Any, toggles: Set[str] = set()):
         return toggles
 
     return toggles
+
+
+def _extract_toggle_from_if_node(if_node) -> Tuple[str, bool]:
+    # we have negation in condition
+    if isinstance(if_node.test, nodes.Not):
+        return if_node.test.node.args[0].value, False
+    return if_node.test.args[0].value, True

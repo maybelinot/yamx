@@ -30,6 +30,7 @@ ENDIF_COMMENT: Final[str] = "{% endif %}"
 TOGGLE_KEY_PREFIX: Final[str] = "__toggled__"
 
 # toggled structure tag constants
+CONDITIONAL_TAG: Final[str] = "!conditional"
 TOGGLE_TAG_PREFIX: Final[str] = "!toggled_"
 TYPE_SEP: Final[str] = "@"
 TOGGLE_SEP: Final[str] = "&"
