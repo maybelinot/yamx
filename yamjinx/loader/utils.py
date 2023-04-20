@@ -4,6 +4,7 @@ from yamjinx.constants import NON_EXISTING_STR
 
 
 def get_jinja_env():
+    # TODO: make a singleton class
     env = SandboxedEnvironment(
         # variable parsing is disabled this way
         variable_start_string=NON_EXISTING_STR,

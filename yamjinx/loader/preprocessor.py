@@ -1,23 +1,18 @@
 import io
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 from jinja2 import nodes
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
-from yamjinx.constants import (
-    TOGGLE_KEY_PREFIX,
-    TOGGLE_SEP,
-    TOGGLE_TAG_PREFIX,
-    TOGGLE_VALUE_SETTER,
-    TYPE_SEP,
-    ToggledBlockType,
-)
+from yamjinx.constants import CONDITIONAL_TAG, TOGGLE_KEY_PREFIX, ToggledBlockType
+from yamjinx.loader.condition import extract_condition
 from yamjinx.loader.utils import get_jinja_env
 
 UNIQUE_TOGGLE_CNT: int = 0
 
 yaml = YAML()
+JINJA_ENV = get_jinja_env()
 
 
 def translate_config_flags(data: str) -> str:
@@ -53,40 +48,50 @@ def translate_config_flags(data: str) -> str:
         '''
         dictionary:
           flag1: value1
-          __toggled__0: !toggled_IS_LOCAL=true
-            flag2: value2
-          __toggled__1: !toggled_IS_LOCAL=false
-            flag2: value3
+          __toggled__0: !conditional
+            data:
+                flag2: value2
+            typ: if
+            condition: defines.get('toggle')
+          __toggled__1: !conditional
+            data:
+                flag2: value3
+            typ: else
+            condition: null
         list:
         - value1
-        - !toggled_IS_LOCAL=true
-          __toggled__2:
-          - value2
-        - !toggled_IS_LOCAL=false
-          __toggled__3:
-          - value3
+        - __toggled__2: !conditional
+            data:
+            - value2
+            typ: if
+            condition: defines.get('toggle')
+        - __toggled__3: !conditional
+            data:
+            - value3
+            typ: else
+            condition: null
         '''
 
     """
-    env = get_jinja_env()
-    jinja_ast = env.parse(data)
-    jinja_yaml_ast = parse_jinja(jinja_ast)
+
+    jinja_ast = JINJA_ENV.parse(data)
+    jinja_yaml_ast = _parse_jinja(jinja_ast)
 
     return jinja_yaml_ast
 
 
-def parse_jinja(
+def _parse_jinja(
     jinja_ast: Union[nodes.Template, nodes.Output, nodes.If, nodes.TemplateData]
 ) -> str:
     # root node of jinja - just process internals
     if isinstance(jinja_ast, nodes.Template):
-        processed = "".join(map(parse_jinja, jinja_ast.body))
+        processed = "".join(map(_parse_jinja, jinja_ast.body))
     # intermediate node which contain conditions and plain text
     elif isinstance(jinja_ast, nodes.Output):
-        processed = "".join(map(parse_jinja, jinja_ast.nodes))
+        processed = "".join(map(_parse_jinja, jinja_ast.nodes))
     # Toggled node
     elif isinstance(jinja_ast, nodes.If):
-        processed = _process_jinja_if_node(jinja_ast)
+        processed = _process_jinja_if_node(jinja_ast, typ=ToggledBlockType.if_)
     # simple text node - no conditions are expected inside
     elif isinstance(jinja_ast, nodes.TemplateData):
         processed = _remove_suffix(jinja_ast.data).rstrip(" ")
@@ -104,16 +109,14 @@ def _remove_suffix(s: str, suffix="# ") -> str:
     return s
 
 
-def _process_jinja_if_node(
-    jinja_ast: nodes.If, typ: Optional[ToggledBlockType] = None
-) -> str:
-    toggle_name, toggle_value = _extract_toggle_from_if_node(jinja_ast)
-    if_data = "".join(map(parse_jinja, jinja_ast.body))
+def _process_jinja_if_node(jinja_ast: nodes.If, typ: ToggledBlockType) -> str:
+    if_data = "".join(map(_parse_jinja, jinja_ast.body))
+    raw_condition = extract_condition(jinja_ast.test, JINJA_ENV)
 
-    if_processed = process_conditions(
+    if_processed = _process_conditions(
         if_data,
-        typ=typ or ToggledBlockType.if_,
-        conds=[(toggle_name, str(toggle_value))],
+        typ=typ,
+        condition=raw_condition,
     )
 
     elif_processed = [
@@ -121,23 +124,16 @@ def _process_jinja_if_node(
         for elif_node in jinja_ast.elif_
     ]
 
-    else_data = "".join(map(parse_jinja, jinja_ast.else_))
-    else_processed = process_conditions(else_data, typ=ToggledBlockType.else_)
+    else_data = "".join(map(_parse_jinja, jinja_ast.else_))
+    else_processed = _process_conditions(else_data, typ=ToggledBlockType.else_)
 
     # filter out empty strings
     processed_nodes = filter(None, [if_processed, *elif_processed, else_processed])
-    return "\n".join(processed_nodes) + "\n"
+    return "\n".join(processed_nodes) + ("" if typ is ToggledBlockType.elif_ else "\n")
 
 
-def _extract_toggle_from_if_node(if_node) -> Tuple[str, bool]:
-    # we have negation in condition
-    if isinstance(if_node.test, nodes.Not):
-        return if_node.test.node.args[0].value, False
-    return if_node.test.args[0].value, True
-
-
-def process_conditions(
-    data: str, typ: ToggledBlockType, conds: List[Tuple[str, str]] = []
+def _process_conditions(
+    raw_data: str, typ: ToggledBlockType, condition: Optional[str] = None
 ) -> str:
     """
     # here we rely on the fact that yaml structure is valid and we can:
@@ -146,32 +142,39 @@ def process_conditions(
     # * dump it back to string form
     """
     global UNIQUE_TOGGLE_CNT
-    yaml_data = yaml.load(data)
+    yaml_data = yaml.load(raw_data)
 
     # in case
     if yaml_data is None:
-        return data
+        return raw_data
 
     # TODO: cover \t and other whitespaces
-    leading_spaces = len(data.lstrip("\n")) - len(data.lstrip("\n").lstrip(" "))
+    leading_spaces = len(raw_data.lstrip("\n")) - len(raw_data.lstrip("\n").lstrip(" "))
 
-    toggles_str = TOGGLE_SEP.join([TOGGLE_VALUE_SETTER.join(cond) for cond in conds])
-    tag = f"{TOGGLE_TAG_PREFIX}{typ.value}{TYPE_SEP}{toggles_str}"
-    key = f"{TOGGLE_KEY_PREFIX}{UNIQUE_TOGGLE_CNT}"
+    data = CommentedMap(
+        {
+            "data": yaml_data,
+            "typ": typ.value,
+            "condition": condition,
+        }
+    )
+    data.yaml_set_tag(CONDITIONAL_TAG)
+
+    res_yaml_data: Union[Dict[str, CommentedMap], List[CommentedMap]]
     if isinstance(yaml_data, CommentedMap):
+        # create unique key to separate conditional block from other fields
+        key = f"{TOGGLE_KEY_PREFIX}{UNIQUE_TOGGLE_CNT}"
+        UNIQUE_TOGGLE_CNT += 1
         # abstraction level has to be created in order to encapsulate toggled fields
-        # TODO: check that tags aren't used before on that map object
-        yaml_data.yaml_set_tag(tag)
-        res_yaml_data = CommentedMap({key: yaml_data})
+        res_yaml_data = {key: data}
     elif isinstance(yaml_data, CommentedSeq):
         # similar structure is created for list fields
-        map_data = CommentedMap({key: yaml_data})
-        map_data.yaml_set_tag(tag)
-        res_yaml_data = [map_data]
+        res_yaml_data = [data]
     else:
         # TODO: support simple scalars
-        raise NotImplementedError
-    UNIQUE_TOGGLE_CNT += 1
+        raise NotImplementedError(
+            f"Conditions on {type(yaml_data)} are not supported yet. :("
+        )
 
     string_stream = io.StringIO()
     yaml.dump(res_yaml_data, stream=string_stream)
