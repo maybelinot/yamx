@@ -22,6 +22,17 @@ class CmpValue:
             return self.value < other.value
 
 
+@frozen
+class ToggledData:
+    """Wrapper for loaded data"""
+
+    _data: Any
+
+    @property
+    def data(self) -> Any:
+        return self._data
+
+
 class ToggledMap(CommentedMap):
     def __init__(
         self,
