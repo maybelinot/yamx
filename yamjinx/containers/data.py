@@ -74,7 +74,7 @@ class ConditionalGroup:
     # TODO: support scalars
     body: Union[ConditionalMap, ConditionalSeq]
     # elif_bodies is None to identify elif nodes that have only body filled
-    elif_bodies: Optional[Tuple["ConditionalGroup", ...]] = tuple()
+    elif_bodies: Tuple["ConditionalGroup", ...] = tuple()
     else_body: Optional[Union[ConditionalMap, ConditionalSeq]] = None
 
     def __lt__(self, other) -> bool:
@@ -96,7 +96,7 @@ class ConditionalGroup:
         if typ is ConditionalBlockType.elif_:
             assert isinstance(self.elif_bodies, tuple)
             elif_groups = self.elif_bodies + (
-                ConditionalGroup(body=data, condition=condition, elif_bodies=None),
+                ConditionalGroup(body=data, condition=condition),
             )
             return evolve(self, elif_bodies=elif_groups)
         elif typ is ConditionalBlockType.else_:

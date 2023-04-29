@@ -77,9 +77,8 @@ def _render_map_comments(
         "indent_cfg": indent_cfg,
         **kwargs,
     }
-    for item in data.items():
-        if not isinstance(item[1], ConditionalGroup):
-            key, value = item
+    for key, value in data.items():
+        if not isinstance(value, ConditionalGroup):
             # translate inner Conditional objects first
             if isinstance(value, ConditionalMap):
                 # add extra indentation for inner map structures
@@ -97,7 +96,8 @@ def _render_map_comments(
                 )
             cm[key] = value
             continue
-        (_, conditional_group) = item
+
+        conditional_group = value
 
         if_comment = IF_CONDITION_TEMPLATE.format(conditional_group.condition)
 
