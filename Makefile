@@ -7,8 +7,6 @@ TEST_RUN = $(TEST) $(TEST_DIR)
 help:
 	@echo "make check"
 	@echo "     run lint and tests"
-	@echo "make ci-check"
-	@echo "     CI env specfic, run non-test checks (linting)"
 	@echo "make help"
 	@echo "     see this help"
 	@echo "make lint"
@@ -25,8 +23,6 @@ help:
 
 
 check: lint test
-
-ci-check: lint
 
 lint:
 	pre-commit run -a
