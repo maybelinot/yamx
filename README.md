@@ -2,54 +2,119 @@
 
 # YAMJinX
 
-extend your YAML configuration with Jinja conditional expressions
+extend your YAML configuration with jinja2 template expressions
 
 ---
 
-## How to use
+## Usage
 
-Current version is useful only for linting of existing configs
+### Create
 
-1. Define configuration with conditional block
+Create your first config with template syntax
 
-    ```yaml
-    config:
-      app2: 2
-      # {% if defines.get("ENABLED") %}
-      enabled: true
-      # {% else %}
-      enabled: false
-      # {% endif %}
-      app1: 1
-    ```
-2. Load configuration with YAMJinX and dump it to string
+```yaml
+# starship.yml
 
-    ```python
-    from yamjinx import YAMJinX
+type: Exploration vessel
+{% if features["speed_improved"] %}
+speed: 50
+max_speed: 100
+{% else %}
+max_speed: 35
+speed: 20
+{% endif %}
+name: Starship Enterprise
 
-    yamjinx = YAMJinX(sort_keys=True)
+weapons:
+  - name: Laser Blaster
+    fire_rate: 2.0
+    damage: 20
+    ammo_capacity: 50
+  {% if features["new_missiles_weapon"] %}
+  - damage: 100
+    fire_rate: 0.1
+    ammo_capacity: 10
+    name: Missiles
+  {% endif %}
+```
 
-    with open("data.yaml") as f:
-        data = yamjinx.load(f)
+### Resolve
 
-    data_raw = yamjinx.dump_to_string(data)
-    print(data_raw)
-    ```
-    ```yaml
-    ### stdout ###
-    config:
-      app1: 1
-      app2: 2
-      # {% if defines.get("ENABLED") %}
-      enabled: true
-      # {% else %}
-      enabled: false
-      # {% endif %}
-    ```
+Resolve jinja logic configuration with `YAMJinX().resolve`
+
+```python
+from yamjinx import YAMJinX
+import json
+
+with open("starship.yml") as fp:
+  raw_config = fp.read()
+
+yamx = YAMJinX()
+context = {
+  "features": {
+    "speed_improved": True,
+    "new_missiles_weapon": False,
+  }
+}
+raw_starship = yamx.resolve(raw_config, context)
+starship_data = json.loads(raw_starship)
+
+assert starship["speed"] == 50
+```
+
+### Format
+
+Format file structure and sort attribute keys with `sort_keys`
+
+```python
+from yamjinx import YAMJinX
+
+yamjinx = YAMJinX(sort_keys=True)
+
+with open("data.yaml") as f:
+    data = yamjinx.load(f)
+
+data_raw = yamjinx.dump_to_string(data)
+print(data_raw)
+```
+
+```yaml
+name: Starship Enterprise
+type: Exploration vessel
+{% if features["speed_improved"] %}
+speed: 50
+max_speed: 100
+{% else %}
+speed: 20
+max_speed: 35
+{% endif %}
+
+weapons:
+  - name: Laser Blaster
+    damage: 20
+    fire_rate: 2.0
+    ammo_capacity: 50
+  {% if features["new_missiles_weapon"] %}
+  - name: Missiles
+    damage: 100
+    fire_rate: 0.1
+    ammo_capacity: 10
+  {% endif %}
+```
+
+## Development
+
+### Linter
+
+run linter with
+```bash
+make lint
+```
 
 
 ## Testing
 
+run tests with
 ```bash
-pytest tests
+make test
 ```
