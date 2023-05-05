@@ -1048,6 +1048,7 @@ def test_config_non_mutable(raw_config):
     [
         "key: !conditional 123",
         "__deduplicator__: 123",
+        "__deduplicator_upd__: 123",
         "____THIS_DOESN'T_EXIST____: 123",
         "__condition__0: 123",
     ],
