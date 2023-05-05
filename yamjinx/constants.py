@@ -34,3 +34,4 @@ CONDITIONAL_TAG: Final[str] = "!conditional"
 
 # conditional key deduplication
 DEDUPLICATOR: Final[str] = "__deduplicator__"
+DEDUPLICATOR_UPD: Final[str] = "__deduplicator_upd__"

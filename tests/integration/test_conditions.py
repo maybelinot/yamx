@@ -1,6 +1,6 @@
 import pytest
 
-from yamjinx.loader.condition import extract_condition
+from yamjinx.jinja.condition import extract_condition
 from yamjinx.loader.utils import get_jinja_env
 
 
@@ -62,4 +62,4 @@ def test_condition_representer(original_condition):
 
     condition = extract_condition(ast_node, env)
 
-    assert condition == original_condition
+    assert condition.raw_value == original_condition

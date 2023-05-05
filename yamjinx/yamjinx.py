@@ -6,7 +6,9 @@ from jinja2 import meta
 from ruamel.yaml import YAML, RoundTripConstructor, RoundTripRepresenter
 
 from yamjinx.constants import (
+    CONDITIONAL_TAG,
     DEDUPLICATOR,
+    DEDUPLICATOR_UPD,
     DEFAULT_MAPPING_INDENT,
     DEFAULT_OFFSET_INDENT,
     DEFAULT_SEQUENCE_INDENT,
@@ -71,7 +73,11 @@ class YAMJinX:
         yaml.constructor.add_custom_constructor(YAML_SEQ_TAG, _construct_seq)
         # add constructor for conditional structures, condition information is parsed out
         # from the structure and saved as an attribute of ConditionalMap object
-        yaml.register_class(ConditionalBlock)
+        # TODO: investigate why class register has flaky behaviour
+        # yaml.register_class(ConditionalBlock)
+        yaml.constructor.add_custom_constructor(
+            CONDITIONAL_TAG, ConditionalBlock.from_yaml
+        )
 
         self.yaml = yaml
 
@@ -152,7 +158,7 @@ class YAMJinX:
     @staticmethod
     def _remove_field_names_deduplicator(s: str) -> str:
         """Removes all occurances of key suffixes used to deduplicated keys"""
-        return re.sub(rf"{DEDUPLICATOR}\d+", "", s)
+        return re.sub(rf"({DEDUPLICATOR}|{DEDUPLICATOR_UPD})\d+", "", s)
 
 
 def _construct_map(self, node):

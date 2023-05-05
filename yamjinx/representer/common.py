@@ -98,8 +98,10 @@ def _render_map_comments(
             continue
 
         conditional_group = value
+        # only else groups have undefined condition
+        assert conditional_group.condition is not None
 
-        if_comment = IF_CONDITION_TEMPLATE.format(conditional_group.condition)
+        if_comment = IF_CONDITION_TEMPLATE.format(conditional_group.condition.raw_value)
 
         to_render: List[
             Tuple[Union[ConditionalMap, ConditionalSeq], Optional[str], Optional[str]]
@@ -116,7 +118,10 @@ def _render_map_comments(
         # render elif blocks
         elif_bodies_count = len(conditional_group.elif_bodies)
         for idx, elif_body in enumerate(conditional_group.elif_bodies):
-            before_comment = ELIF_CONDITION_TEMPLATE.format(elif_body.condition)
+            assert elif_body.condition is not None
+            before_comment = ELIF_CONDITION_TEMPLATE.format(
+                elif_body.condition.raw_value
+            )
             # set after comment based if it's last elif block and
             # there is no else statement in the conditional group
             if (idx == elif_bodies_count - 1) and conditional_group.else_body is None:
@@ -210,27 +215,34 @@ def _render_seq_comments(
             cs.append(item)
             continue
 
-        if_comment = IF_CONDITION_TEMPLATE.format(item.condition)
+        conditional_group = item
+        # only else groups have undefined condition
+        assert conditional_group.condition is not None
+
+        if_comment = IF_CONDITION_TEMPLATE.format(conditional_group.condition.raw_value)
 
         to_render: List[
             Tuple[Union[ConditionalMap, ConditionalSeq], Optional[str], Optional[str]]
         ] = []
         # in case we have only if body
-        if item.else_body is None and not item.elif_bodies:
+        if conditional_group.else_body is None and not conditional_group.elif_bodies:
             # TODO: create nice wrapper for this structure of
             # tuple(data, comment_before, comment_after)
-            to_render.append((item.body, if_comment, ENDIF_COMMENT))
+            to_render.append((conditional_group.body, if_comment, ENDIF_COMMENT))
         else:
-            to_render.append((item.body, if_comment, None))
+            to_render.append((conditional_group.body, if_comment, None))
 
         # render elif blocks
-        assert item.elif_bodies is not None
-        elif_bodies_count = len(item.elif_bodies)
-        for idx, elif_body in enumerate(item.elif_bodies):
-            before_comment = ELIF_CONDITION_TEMPLATE.format(elif_body.condition)
+        assert conditional_group.elif_bodies is not None
+        elif_bodies_count = len(conditional_group.elif_bodies)
+        for idx, elif_body in enumerate(conditional_group.elif_bodies):
+            assert elif_body.condition is not None
+            before_comment = ELIF_CONDITION_TEMPLATE.format(
+                elif_body.condition.raw_value
+            )
             # set after comment if it's last elif block and else block is
             # not present in the conditional group
-            if (idx == elif_bodies_count - 1) and item.else_body is None:
+            if (idx == elif_bodies_count - 1) and conditional_group.else_body is None:
                 after_comment = ENDIF_COMMENT
             else:
                 after_comment = None
@@ -238,8 +250,8 @@ def _render_seq_comments(
             to_render.append((elif_body.body, before_comment, after_comment))
 
         # render else comment if exists
-        if item.else_body:
-            to_render.append((item.else_body, ELSE_COMMENT, ENDIF_COMMENT))
+        if conditional_group.else_body:
+            to_render.append((conditional_group.else_body, ELSE_COMMENT, ENDIF_COMMENT))
 
         # TODO: merge with map processing
         # render all conditional group blocks

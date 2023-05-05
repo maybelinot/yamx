@@ -6,13 +6,15 @@ from immutables import Map
 from jinja2 import Environment, nodes
 from jinja2.compiler import CodeGenerator, EvalContext, Frame
 
+from yamjinx.containers.data import Condition
 
-def extract_condition(node: nodes.Test, env: Environment) -> str:
+
+def extract_condition(node: nodes.Test, env: Environment) -> Condition:
     generator = CustomCodeGenerator(env, None, None)
     eval_ctx = EvalContext(env, "")
     frame = Frame(eval_ctx)
     generator.visit(node, frame)
-    return generator.stream.getvalue().strip()
+    return Condition(generator.stream.getvalue().strip())
 
 
 class CustomCodeGenerator(CodeGenerator):
