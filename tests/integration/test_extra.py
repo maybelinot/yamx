@@ -2,8 +2,8 @@ import io
 
 import pytest
 
-from yamjinx import YAMJinX
-from yamjinx.extra import extract_toggles
+from yamx import YAMX
+from yamx.extra import extract_toggles
 
 
 @pytest.mark.parametrize(
@@ -85,7 +85,7 @@ def test_toggle_extraction(raw_config, expected_toggles):
     # remove leading newline
 
     raw_config = raw_config.lstrip("\n")
-    cyaml = YAMJinX(sort_keys=False)
+    cyaml = YAMX(sort_keys=False)
 
     with io.StringIO(raw_config) as input_stream:
         data = cyaml.load(input_stream)

@@ -3,7 +3,7 @@ from typing import Any, ClassVar, Optional, Tuple, Union
 from attr import evolve, frozen
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
-from yamjinx.constants import (
+from yamx.constants import (
     CONDITIONAL_TAG,
     DEDUPLICATOR_UPD,
     YAML_MAP_TAG,

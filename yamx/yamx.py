@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 from jinja2 import meta
 from ruamel.yaml import YAML, RoundTripConstructor, RoundTripRepresenter
 
-from yamjinx.constants import (
+from yamx.constants import (
     CONDITIONAL_TAG,
     DEDUPLICATOR,
     DEDUPLICATOR_UPD,
@@ -15,17 +15,17 @@ from yamjinx.constants import (
     YAML_MAP_TAG,
     YAML_SEQ_TAG,
 )
-from yamjinx.containers import (
+from yamx.containers import (
     ConditionalBlock,
     ConditionalData,
     ConditionalMap,
     ConditionalSeq,
     IndentConfig,
 )
-from yamjinx.loader import translate_config_flags, validate_content
-from yamjinx.loader.grouper import group_conditional_blocks
-from yamjinx.loader.utils import get_jinja_env
-from yamjinx.representer import (
+from yamx.loader import translate_config_flags, validate_content
+from yamx.loader.grouper import group_conditional_blocks
+from yamx.loader.utils import get_jinja_env
+from yamx.representer import (
     translate_conditional_map_to_yaml,
     translate_conditional_seq_to_yaml,
 )
@@ -53,7 +53,7 @@ class ConditionalRoundTripRepresenter(RoundTripRepresenter):
         self.yaml_representers[tag] = representer
 
 
-class YAMJinX:
+class YAMX:
     """Wrapper around ruamel loader that supports conditional functionality"""
 
     def __init__(self, yaml: Optional[YAML] = None, sort_keys: bool = True):

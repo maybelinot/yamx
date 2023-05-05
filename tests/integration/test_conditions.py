@@ -1,7 +1,7 @@
 import pytest
 
-from yamjinx.jinja.condition import extract_condition
-from yamjinx.loader.utils import get_jinja_env
+from yamx.jinja.condition import extract_condition
+from yamx.loader.utils import get_jinja_env
 
 
 @pytest.mark.parametrize(

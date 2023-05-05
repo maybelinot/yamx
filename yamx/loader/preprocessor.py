@@ -5,14 +5,10 @@ from jinja2 import nodes
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
-from yamjinx.constants import (
-    CONDITIONAL_KEY_PREFIX,
-    CONDITIONAL_TAG,
-    ConditionalBlockType,
-)
-from yamjinx.containers.data import Condition
-from yamjinx.jinja.condition import extract_condition
-from yamjinx.loader.utils import get_jinja_env
+from yamx.constants import CONDITIONAL_KEY_PREFIX, CONDITIONAL_TAG, ConditionalBlockType
+from yamx.containers.data import Condition
+from yamx.jinja.condition import extract_condition
+from yamx.loader.utils import get_jinja_env
 
 UNIQUE_CONDITION_CNT: int = 0
 

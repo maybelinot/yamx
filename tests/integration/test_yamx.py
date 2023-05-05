@@ -3,7 +3,7 @@ from typing import Optional
 
 import pytest
 
-from yamjinx import YAMJinX
+from yamx import YAMX
 
 
 def _load_dump_and_compare(yaml, raw_data: str, expected: Optional[str] = None):
@@ -1039,7 +1039,7 @@ a1: 2
     ],
 )
 def test_config_non_mutable(raw_config):
-    yamx = YAMJinX(sort_keys=False)
+    yamx = YAMX(sort_keys=False)
     _load_dump_and_compare(yamx, raw_config)
 
 
@@ -1054,7 +1054,7 @@ def test_config_non_mutable(raw_config):
 )
 def test_config_validate(raw_config):
     input_stream = io.StringIO(raw_config)
-    yamx = YAMJinX(sort_keys=False)
+    yamx = YAMX(sort_keys=False)
 
     with pytest.raises(AssertionError):
         yamx.load(input_stream)
@@ -1141,7 +1141,7 @@ params:
     ],
 )
 def test_config_indentation_settings(raw_config):
-    yamx = YAMJinX(sort_keys=False)
+    yamx = YAMX(sort_keys=False)
 
     yamx.indent(mapping=4, sequence=4, offset=1)
 
@@ -1224,13 +1224,13 @@ list:
     ],
 )
 def test_config_sort_keys(raw_config, expected):
-    yamx = YAMJinX(sort_keys=True)
+    yamx = YAMX(sort_keys=True)
     _load_dump_and_compare(yamx, raw_config, expected)
 
 
 def test_constructor_instantiation():
-    yamx1 = YAMJinX()
-    yamx2 = YAMJinX()
+    yamx1 = YAMX()
+    yamx2 = YAMX()
 
     yamx1.yaml.constructor.add_custom_constructor("test_constructor", lambda: None)
     assert "test_constructor" in yamx1.yaml.constructor.yaml_constructors
@@ -1349,7 +1349,7 @@ active: false
     ],
 )
 def test_resolve(raw_config, expected):
-    yamx = YAMJinX()
+    yamx = YAMX()
     context = {"defines": {"toggle_a": True}}
     data = yamx.resolve(raw_config, context)
 
@@ -1382,7 +1382,7 @@ a: 1
     ],
 )
 def test_resolve_failed(raw_config, error_ctx):
-    yamx = YAMJinX()
+    yamx = YAMX()
     context = {"defines": {"toggle_a": True}}
     with error_ctx:
         yamx.resolve(raw_config, context)

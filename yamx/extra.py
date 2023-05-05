@@ -4,13 +4,13 @@ from typing import Any, Optional, Set
 
 from jinja2 import nodes
 
-from yamjinx.containers.data import (
+from yamx.containers.data import (
     Condition,
     ConditionalGroup,
     ConditionalMap,
     ConditionalSeq,
 )
-from yamjinx.loader.utils import get_jinja_env
+from yamx.loader.utils import get_jinja_env
 
 
 def extract_toggles(obj: Any, toggles: Set[str] = set()):

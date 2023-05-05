@@ -1,6 +1,6 @@
 from typing import Any
 
-from yamjinx.constants import (
+from yamx.constants import (
     CONDITIONAL_KEY_PREFIX,
     CONDITIONAL_TAG,
     DEDUPLICATOR,
