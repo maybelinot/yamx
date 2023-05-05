@@ -3,20 +3,20 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
-from yamjinx.constants import (
+from yamx.constants import (
     ELIF_CONDITION_TEMPLATE,
     ELSE_COMMENT,
     ENDIF_COMMENT,
     IF_CONDITION_TEMPLATE,
 )
-from yamjinx.containers.data import (
+from yamx.containers.data import (
     CmpValue,
     ConditionalGroup,
     ConditionalMap,
     ConditionalSeq,
 )
-from yamjinx.containers.settings import IndentConfig
-from yamjinx.representer.rendering import render_conditional_map, render_conditional_seq
+from yamx.containers.settings import IndentConfig
+from yamx.representer.rendering import render_conditional_map, render_conditional_seq
 
 
 def translate_conditional_map_to_commented_map(

@@ -1,4 +1,4 @@
-from yamjinx.containers.data import (
+from yamx.containers.data import (
     Condition,
     ConditionalBlock,
     ConditionalData,
@@ -6,7 +6,7 @@ from yamjinx.containers.data import (
     ConditionalMap,
     ConditionalSeq,
 )
-from yamjinx.containers.settings import IndentConfig
+from yamx.containers.settings import IndentConfig
 
 __all__ = [
     "ConditionalBlock",

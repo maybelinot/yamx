@@ -1,6 +1,6 @@
 from jinja2.sandbox import SandboxedEnvironment
 
-from yamjinx.constants import NON_EXISTING_STR
+from yamx.constants import NON_EXISTING_STR
 
 
 def get_jinja_env():

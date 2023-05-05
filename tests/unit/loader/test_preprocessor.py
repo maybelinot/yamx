@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from yamjinx.loader.preprocessor import translate_config_flags
+from yamx.loader.preprocessor import translate_config_flags
 
 
 @pytest.mark.parametrize(
@@ -112,6 +112,6 @@ __condition__3: !conditional
         ),
     ],
 )
-@patch("yamjinx.loader.preprocessor.UNIQUE_CONDITION_CNT", 0)
+@patch("yamx.loader.preprocessor.UNIQUE_CONDITION_CNT", 0)
 def test_translate_config_flags(raw_data, translated_data):
     assert translate_config_flags(raw_data) == translated_data

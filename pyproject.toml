@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "yamjinx"
+name = "yamx"
 version = "0.1.0"
 description = "YAML parser that supports jinja conditional expressions"
 
@@ -9,7 +9,7 @@ authors = [
     "Eduard Trott <eduard.trott@workday.com>"
 ]
 
-repository = "https://github.com/maybelinot/yamjinx"
+repository = "https://github.com/maybelinot/yamx"
 
 # README file(s) are used as the package description
 readme = ["README.md", "LICENSE"]
@@ -38,7 +38,7 @@ pytest-cov = "^3.0"
 [tool.isort]
 profile = "black"
 default_section = "THIRDPARTY"
-known_first_party = "yamjinx"
+known_first_party = "yamx"
 known_third_party= "tests"
 sections = "FUTURE,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
 

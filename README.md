@@ -1,8 +1,8 @@
 
 
-# YAMJinX
+# YAMX
 
-extend your YAML configuration with jinja2 template expressions
+extend your YAML configuration with jinja2 expressions
 
 ---
 
@@ -40,16 +40,16 @@ weapons:
 
 ### Resolve
 
-Resolve jinja logic configuration with `YAMJinX().resolve`
+Resolve jinja logic configuration with `YAMX().resolve`
 
 ```python
-from yamjinx import YAMJinX
+from yamx import YAMX
 import json
 
 with open("starship.yml") as fp:
   raw_config = fp.read()
 
-yamx = YAMJinX()
+yamx = YAMX()
 context = {
   "features": {
     "speed_improved": True,
@@ -67,14 +67,14 @@ assert starship["speed"] == 50
 Format file structure and sort attribute keys with `sort_keys`
 
 ```python
-from yamjinx import YAMJinX
+from yamx import YAMX
 
-yamjinx = YAMJinX(sort_keys=True)
+yamx = YAMX(sort_keys=True)
 
 with open("data.yaml") as f:
-    data = yamjinx.load(f)
+    data = yamx.load(f)
 
-data_raw = yamjinx.dump_to_string(data)
+data_raw = yamx.dump_to_string(data)
 print(data_raw)
 ```
 

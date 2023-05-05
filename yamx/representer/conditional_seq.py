@@ -1,8 +1,8 @@
 from ruamel.yaml.nodes import SequenceNode
 
-from yamjinx.containers.data import ConditionalMap
-from yamjinx.containers.settings import IndentConfig
-from yamjinx.representer.common import translate_conditional_seq_to_commented_seq
+from yamx.containers.data import ConditionalMap
+from yamx.containers.settings import IndentConfig
+from yamx.representer.common import translate_conditional_seq_to_commented_seq
 
 
 def translate_conditional_seq_to_yaml(

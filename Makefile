@@ -34,10 +34,10 @@ test:
 	$(TEST_RUN)
 
 test-with-coverage:
-	$(TEST_RUN) --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=yamjinx | tee pytest-coverage.txt
+	$(TEST_RUN) --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=yamx | tee pytest-coverage.txt
 
 test-with-coverage-html:
-	$(TEST_RUN) --cov=yamjinx --cov-report=html
+	$(TEST_RUN) --cov=yamx --cov-report=html
 
 update-deps:
 	poetry update

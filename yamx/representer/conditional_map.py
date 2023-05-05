@@ -1,8 +1,8 @@
 from ruamel.yaml.nodes import MappingNode
 
-from yamjinx.containers.data import ConditionalMap
-from yamjinx.containers.settings import IndentConfig
-from yamjinx.representer.common import translate_conditional_map_to_commented_map
+from yamx.containers.data import ConditionalMap
+from yamx.containers.settings import IndentConfig
+from yamx.representer.common import translate_conditional_map_to_commented_map
 
 
 def translate_conditional_map_to_yaml(

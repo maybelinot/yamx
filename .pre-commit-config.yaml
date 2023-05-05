@@ -55,8 +55,7 @@ repos:
         v0.991
     hooks:
         -   id: mypy
-            name: mypy_lib
-            files: yamjinx
+            files: yamx
             args:
                 - --allow-redefinition
                 - --ignore-missing-imports

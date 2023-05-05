@@ -4,8 +4,8 @@ from ruamel.yaml.comments import CommentedMap, CommentedSeq
 from ruamel.yaml.error import CommentMark
 from ruamel.yaml.tokens import CommentToken
 
-from yamjinx.constants import DEDUPLICATOR
-from yamjinx.containers.data import ConditionalMap
+from yamx.constants import DEDUPLICATOR
+from yamx.containers.data import ConditionalMap
 
 UNIQUE_CNT: int = 0
 

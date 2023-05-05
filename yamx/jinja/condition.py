@@ -6,7 +6,7 @@ from immutables import Map
 from jinja2 import Environment, nodes
 from jinja2.compiler import CodeGenerator, EvalContext, Frame
 
-from yamjinx.containers.data import Condition
+from yamx.containers.data import Condition
 
 
 def extract_condition(node: nodes.Test, env: Environment) -> Condition:

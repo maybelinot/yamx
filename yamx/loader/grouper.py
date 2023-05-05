@@ -1,7 +1,7 @@
 from typing import Any
 
-from yamjinx.constants import ConditionalBlockType
-from yamjinx.containers import (
+from yamx.constants import ConditionalBlockType
+from yamx.containers import (
     ConditionalBlock,
     ConditionalGroup,
     ConditionalMap,

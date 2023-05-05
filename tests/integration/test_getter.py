@@ -2,8 +2,8 @@ import io
 
 import pytest
 
-from yamjinx import YAMJinX
-from yamjinx.containers.data import ConditionalData, ConditionalMap
+from yamx import YAMX
+from yamx.containers.data import ConditionalData, ConditionalMap
 
 
 @pytest.mark.parametrize(
@@ -51,7 +51,7 @@ field3: 2
 def test_map_update_with_selection(original, selection, expected):
     res_data = ConditionalData(ConditionalMap(original))
 
-    yamx = YAMJinX()
+    yamx = YAMX()
     with io.StringIO(selection.lstrip("\n")) as input_stream:
         data = yamx.load(input_stream)
 
