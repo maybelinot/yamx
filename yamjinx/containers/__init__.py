@@ -1,4 +1,5 @@
 from yamjinx.containers.data import (
+    Condition,
     ConditionalBlock,
     ConditionalData,
     ConditionalGroup,
@@ -10,6 +11,8 @@ from yamjinx.containers.settings import IndentConfig
 __all__ = [
     "ConditionalBlock",
     "IndentConfig",
+    "Condition",
+    "RenderingContext",
     "ConditionalGroup",
     "ConditionalData",
     "ConditionalMap",

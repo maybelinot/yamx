@@ -10,7 +10,8 @@ from yamjinx.constants import (
     CONDITIONAL_TAG,
     ConditionalBlockType,
 )
-from yamjinx.loader.condition import extract_condition
+from yamjinx.containers.data import Condition
+from yamjinx.jinja.condition import extract_condition
 from yamjinx.loader.utils import get_jinja_env
 
 UNIQUE_CONDITION_CNT: int = 0
@@ -118,12 +119,12 @@ def _remove_suffix(s: str, suffix="# ") -> str:
 
 def _process_jinja_if_node(jinja_ast: nodes.If, typ: ConditionalBlockType) -> str:
     if_data = "".join(map(_parse_jinja, jinja_ast.body))
-    raw_condition = extract_condition(jinja_ast.test, JINJA_ENV)
+    condition = extract_condition(jinja_ast.test, JINJA_ENV)
 
     if_processed = _process_conditions(
         if_data,
         typ=typ,
-        condition=raw_condition,
+        condition=condition,
     )
 
     elif_processed = [
@@ -142,7 +143,7 @@ def _process_jinja_if_node(jinja_ast: nodes.If, typ: ConditionalBlockType) -> st
 
 
 def _process_conditions(
-    raw_data: str, typ: ConditionalBlockType, condition: Optional[str] = None
+    raw_data: str, typ: ConditionalBlockType, condition: Optional[Condition] = None
 ) -> str:
     """
     # here we rely on the fact that yaml structure is valid and we can:
@@ -164,7 +165,7 @@ def _process_conditions(
         {
             "data": yaml_data,
             "typ": typ.value,
-            "condition": condition,
+            "condition": condition and condition.raw_value,
         }
     )
     data.yaml_set_tag(CONDITIONAL_TAG)

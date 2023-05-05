@@ -4,7 +4,12 @@ from typing import Any, Optional, Set
 
 from jinja2 import nodes
 
-from yamjinx.containers.data import ConditionalGroup, ConditionalMap, ConditionalSeq
+from yamjinx.containers.data import (
+    Condition,
+    ConditionalGroup,
+    ConditionalMap,
+    ConditionalSeq,
+)
 from yamjinx.loader.utils import get_jinja_env
 
 
@@ -27,12 +32,12 @@ def extract_toggles(obj: Any, toggles: Set[str] = set()):
     return toggles
 
 
-def _extract_toggles_from_condition(condition: Optional[str]) -> Set[str]:
+def _extract_toggles_from_condition(condition: Optional[Condition]) -> Set[str]:
     """This method works only for particular condition format"""
     if condition is None:
         return set()
     env = get_jinja_env()
-    jinja_ast = env.parse(f"{{% if {condition} %}}{{% endif %}}")
+    jinja_ast = env.parse(f"{{% if {condition.raw_value} %}}{{% endif %}}")
     return {
         _extract_toggle_from_if_node(jinja_ast.body[0].test),
     }
