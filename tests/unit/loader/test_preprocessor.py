@@ -16,7 +16,7 @@ a: 1
 {% endif %}
 """,
             """
-__condition__0: !conditional
+__condition__0: !<conditional>
   data:
     a: 1
   typ: if
@@ -37,22 +37,22 @@ a: 4
 {% endif %}
 """,
             """
-__condition__0: !conditional
+__condition__0: !<conditional>
   data:
     a: 1
   typ: if
   condition: condition1
-__condition__1: !conditional
+__condition__1: !<conditional>
   data:
     a: 2
   typ: elif
   condition: condition2
-__condition__2: !conditional
+__condition__2: !<conditional>
   data:
     a: 3
   typ: elif
   condition: condition3
-__condition__3: !conditional
+__condition__3: !<conditional>
   data:
     a: 4
   typ: else
@@ -67,7 +67,7 @@ __condition__3: !conditional
 {% endif %}
 """,
             """
-- !conditional
+- !<conditional>
   data:
   - 1
   typ: if
@@ -88,22 +88,22 @@ __condition__3: !conditional
 {% endif %}
 """,
             """
-- !conditional
+- !<conditional>
   data:
   - 1
   typ: if
   condition: condition1
-- !conditional
+- !<conditional>
   data:
   - 2
   typ: elif
   condition: condition2
-- !conditional
+- !<conditional>
   data:
   - 3
   typ: elif
   condition: condition3
-- !conditional
+- !<conditional>
   data:
   - 4
   typ: else

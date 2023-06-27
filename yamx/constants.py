@@ -30,7 +30,7 @@ ENDIF_COMMENT: Final[str] = "{% endif %}"
 CONDITIONAL_KEY_PREFIX: Final[str] = "__condition__"
 
 # conditional structure tag constants
-CONDITIONAL_TAG: Final[str] = "!conditional"
+CONDITIONAL_TAG: Final[str] = "conditional"
 
 # conditional key deduplication
 DEDUPLICATOR: Final[str] = "__deduplicator__"

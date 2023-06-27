@@ -2,6 +2,7 @@ from typing import Any, ClassVar, Optional, Tuple, Union
 
 from attr import evolve, frozen
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
+from ruamel.yaml.tag import Tag
 
 from yamx.constants import (
     CONDITIONAL_TAG,
@@ -59,12 +60,14 @@ class ConditionalData:
 class ConditionalMap(CommentedMap):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
-        self.yaml_set_tag(YAML_MAP_TAG)
+        tag = Tag(suffix=YAML_MAP_TAG)
+        self.yaml_set_ctag(tag)
 
 
 class ConditionalSeq(CommentedSeq):
     def __init__(self, *args, **kw) -> None:
-        self.yaml_set_tag(YAML_SEQ_TAG)
+        tag = Tag(suffix=YAML_SEQ_TAG)
+        self.yaml_set_ctag(tag)
         super().__init__(*args, **kw)
 
 
