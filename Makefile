@@ -41,5 +41,6 @@ test-with-coverage-html:
 
 update-deps:
 	poetry update
-	# Workaround for poetry install to be able to install ruamel.yaml library
-	./dev/fix_ruamel_pkg_names.py poetry.lock
+
+publish:
+	poetry publish --build
