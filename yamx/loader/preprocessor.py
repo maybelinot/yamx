@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Union
 from jinja2 import nodes
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
+from ruamel.yaml.tag import Tag
 
 from yamx.constants import CONDITIONAL_KEY_PREFIX, CONDITIONAL_TAG, ConditionalBlockType
 from yamx.containers.data import Condition
@@ -164,7 +165,7 @@ def _process_conditions(
             "condition": condition and condition.raw_value,
         }
     )
-    data.yaml_set_tag(CONDITIONAL_TAG)
+    data.yaml_set_ctag(Tag(suffix=CONDITIONAL_TAG))
 
     res_yaml_data: Union[Dict[str, CommentedMap], List[CommentedMap]]
     if isinstance(yaml_data, CommentedMap):

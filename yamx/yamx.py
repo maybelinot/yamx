@@ -135,7 +135,7 @@ class YAMX:
             data._data, stream, transform=self._remove_field_names_deduplicator
         )
 
-    def resolve(self, data: ConditionalData, context: Dict[str, Any]) -> Any:
+    def resolve(self, data: str, context: Dict[str, Any]) -> Any:
         env = get_jinja_env()
         try:
             ast = env.parse(data)
