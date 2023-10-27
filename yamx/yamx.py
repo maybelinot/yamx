@@ -1,8 +1,7 @@
 import re
 from functools import partial
-from typing import Any, Dict, Optional
+from typing import Optional
 
-from jinja2 import meta
 from ruamel.yaml import YAML, RoundTripConstructor, RoundTripRepresenter
 
 from yamx.constants import (
@@ -24,7 +23,6 @@ from yamx.containers import (
 )
 from yamx.loader import translate_config_flags, validate_content
 from yamx.loader.grouper import group_conditional_blocks
-from yamx.loader.utils import get_jinja_env
 from yamx.representer import (
     translate_conditional_map_to_yaml,
     translate_conditional_seq_to_yaml,
@@ -57,6 +55,7 @@ class YAMX:
     """Wrapper around ruamel loader that supports conditional functionality"""
 
     def __init__(self, yaml: Optional[YAML] = None, sort_keys: bool = True):
+        """Initialize instance with custom YAML constructors and representers"""
         self.sort_keys = sort_keys
 
         if yaml is None:
@@ -91,6 +90,7 @@ class YAMX:
         sequence: int = DEFAULT_SEQUENCE_INDENT,
         offset: int = DEFAULT_OFFSET_INDENT,
     ) -> None:
+        """Set indentation settings for mapping/sequence blocks"""
         indent_cfg = IndentConfig(
             mapping=mapping,
             sequence=sequence,
@@ -124,6 +124,9 @@ class YAMX:
 
     def load(self, stream) -> ConditionalData:
         data = stream.read()
+        return self.load_from_string(data)
+
+    def load_from_string(self, data: str) -> ConditionalData:
         validate_content(data)
         conf = translate_config_flags(data)
         data = self.yaml.load(conf)
@@ -135,23 +138,7 @@ class YAMX:
             data._data, stream, transform=self._remove_field_names_deduplicator
         )
 
-    def resolve(self, data: str, context: Dict[str, Any]) -> Any:
-        env = get_jinja_env()
-        try:
-            ast = env.parse(data)
-        except Exception as e:
-            raise Exception("Failed to parse jinja syntax while resolving.") from e
-
-        missing_variables = meta.find_undeclared_variables(ast) - set(context.keys())
-        if missing_variables:
-            raise Exception(
-                f"Following context variables are not defined: {missing_variables}"
-            )
-
-        template = env.from_string(ast)
-        return template.render(**context)
-
-    def dump_to_string(self, data, **kwargs) -> str:
+    def dump_to_string(self, data: ConditionalData, **kwargs) -> str:
         raw_data = self.yaml.dump_to_string(data._data, **kwargs)
         return self._remove_field_names_deduplicator(raw_data)
 
