@@ -16,7 +16,7 @@ Create your first config with template syntax
 # starship.yml
 
 type: Exploration vessel
-{% if toggles["speed_improved"] %}
+{% if toggles.speed_improved %}
 speed: 50
 max_speed: 100
 {% else %}
@@ -30,7 +30,7 @@ weapons:
     fire_rate: 2.0
     damage: 20
     ammo_capacity: 50
-  {% if toggles["new_missiles_weapon"] %}
+  {% if toggles.new_missiles_weapon %}
   - damage: 100
     fire_rate: 0.1
     ammo_capacity: 10
@@ -40,16 +40,25 @@ weapons:
 
 ### Extra functionality
 
+
 Some parts of the library don't have general support yet and available only as set of `extra` tools to work with specific format of conditionssuch as
+
 `defines.get("FEATURE_FLAG")`
+
 `toggles.FEATURE_FLAG`
+
 `toggles.get("FEATURE_FLAG")`
+
 `toggles["FEATURE_FLAG"]`
+
 `config_flags.NAME`
+
 `config_flags.get("NAME")`
+
 `config_flags["NAME"]`
 
 #### Extract toggle names used in config
+
 
 ```python
 from yamx import YAMX
@@ -69,8 +78,10 @@ assert toggles == {"speed_improved", "new_missiles_weapon"}
 #### Resolve jinja logic configuration with `yamx.extra.resolve_toggles`
 
 ```python
+from immutables import Map
+
 from yamx import YAMX
-from yamx.extra import resolve_toggles
+from yamx.extra import resolve_toggles, ResolvingContext
 
 yamx = YAMX()
 
@@ -79,10 +90,10 @@ with open("starship.yml") as fp:
 
 
 context = {
-  "toggles": {
-    "speed_improved": True,
-    "new_missiles_weapon": False,
-  }
+  "toggles": ResolvingContext({
+    "speed_improved":True,
+    "new_missiles_weapon":False,
+  })
 }
 resolved_data = resolve_toggles(data, context)
 

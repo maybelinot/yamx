@@ -3,7 +3,7 @@
 from distutils.util import strtobool
 from typing import Any, Dict, Optional, Set
 
-from attrs import evolve
+from attrs import evolve, frozen
 from jinja2 import nodes
 
 from yamx.containers.data import (
@@ -14,6 +14,28 @@ from yamx.containers.data import (
     ConditionalSeq,
 )
 from yamx.loader.utils import get_jinja_env
+
+
+@frozen
+class ResolvingContext:
+    _data: Dict[str, bool]
+
+    def __getattr__(self, attr_name):
+        if attr_name in self._data:
+            return self._data[attr_name]
+        else:
+            raise AttributeError(
+                f"'ResolvingContext' object has no attribute '{attr_name}'"
+            )
+
+    def __getitem__(self, key: str) -> bool:
+        return self._data[key]
+
+    def get(self, key: str) -> bool:
+        return self._data.get(key, False)
+
+    def keys(self):
+        return self._data.keys()
 
 
 def extract_toggles(obj: Any) -> Set[str]:
@@ -56,7 +78,7 @@ def _extract_toggles_from_condition(condition: Optional[Condition]) -> Set[str]:
 
 
 def _extract_toggle_from_if_node(if_test_node: nodes.Call) -> str:
-    """Current inplementation supports only following conditions and their
+    """Current implementation supports only following conditions and their
     negative form:
 
     `defines.get("FEATURE_FLAG")`
@@ -77,9 +99,9 @@ def _extract_toggle_from_if_node(if_test_node: nodes.Call) -> str:
         name = node.node.name
         value = node.attr
     # getitem access, e.g. toggles[]
-    elif isinstance(node, nodes.Call) and node.node.attr == "getitem":
-        name = node.args[0].name
-        value = node.args[1].value
+    elif isinstance(node, nodes.Getitem):
+        name = node.node.name
+        value = node.arg.value
     # get access, e.g. toggles.get()
     elif isinstance(node, nodes.Call) and node.node.attr == "get":
         name = node.node.node.name
@@ -91,7 +113,7 @@ def _extract_toggle_from_if_node(if_test_node: nodes.Call) -> str:
     return value
 
 
-def resolve_toggles(obj: Any, context: Dict):
+def resolve_toggles(obj: Any, context: Dict[str, ResolvingContext]):
     if isinstance(obj, ConditionalData):
         return evolve(obj, data=resolve_toggles(obj.data, context))
     elif isinstance(obj, ConditionalMap):
@@ -109,7 +131,7 @@ def resolve_toggles(obj: Any, context: Dict):
         toggles = _extract_toggles_from_condition(obj.condition)
 
         assert toggles.issubset(
-            set(context["defines"])
+            set(context["defines"].keys())
         ), f"Toggle definition for {toggles} is missing."
 
         assert obj.condition
@@ -126,7 +148,9 @@ def resolve_toggles(obj: Any, context: Dict):
         return obj
 
 
-def resolve_condition(condition: Condition, context: Dict) -> bool:
+def resolve_condition(
+    condition: Condition, context: Dict[str, ResolvingContext]
+) -> bool:
     """Resolve condition to boolean value"""
     env = get_jinja_env()
     # TODO: construct jinja ast if clause resolver
@@ -134,6 +158,6 @@ def resolve_condition(condition: Condition, context: Dict) -> bool:
         f"{{% if {condition.raw_value} %}}True{{% else %}}False{{% endif %}}"
     )
 
-    resolved = env.from_string(jinja_ast).render(**context)
+    resolved = env.from_string(jinja_ast).render(context)
 
     return bool(strtobool(resolved))

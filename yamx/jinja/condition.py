@@ -33,20 +33,16 @@ class CustomCodeGenerator(CodeGenerator):
             super().visit_Const(node, frame)
 
     def visit_Getattr(self, node, frame):
-        if isinstance(node.node, nodes.Name):
-            self.write(node.node.name)
-            if isinstance(node.attr, nodes.Node):
-                self.write(".")
-                self.visit(node.attr, frame)
-            else:
-                self.write("." + node.attr)
-        else:
-            self.visit(node.node, frame)
-            if isinstance(node.attr, nodes.Node):
-                self.write(".")
-                self.visit(node.attr, frame)
-            else:
-                self.write("." + node.attr)
+        self.visit(node.node, frame)
+
+        self.write("." + node.attr)
+
+    def visit_Getitem(self, node, frame):
+        self.visit(node.node, frame)
+
+        self.write("[")
+        self.visit(node.arg, frame)
+        self.write("]")
 
     def visit_Call(self, node, frame):
         self.visit(node.node, frame)
