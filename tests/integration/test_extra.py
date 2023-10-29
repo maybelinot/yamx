@@ -3,7 +3,7 @@ import io
 import pytest
 
 from yamx import YAMX
-from yamx.extra import extract_toggles, resolve_toggles
+from yamx.extra import ResolvingContext, extract_toggles, resolve_toggles
 
 
 @pytest.mark.parametrize(
@@ -247,11 +247,27 @@ list:
   key2: val2
 """,
         ),
+        # getitem
+        (
+            """
+# {% if defines["toggle_a"] %}
+field: value
+# {% endif %}""",
+            "field: value",
+        ),
+        # context attr
+        (
+            """
+# {% if defines.toggle_a %}
+field: value
+# {% endif %}""",
+            "field: value",
+        ),
     ],
 )
 def test_resolve_toggles(raw_config, expected):
     yamx = YAMX()
-    context = {"defines": {"toggle_a": True, "toggle_b": False}}
+    context = {"defines": ResolvingContext({"toggle_a": True, "toggle_b": False})}
 
     conditional_data = yamx.load_from_string(raw_config)
     resolved_data = resolve_toggles(conditional_data, context)
@@ -277,6 +293,6 @@ a: 1
 def test_resolve_failed(raw_config):
     yamx = YAMX()
     data = yamx.load_from_string(raw_config)
-    context = {"defines": {"toggle_a": True}}
+    context = ResolvingContext({"defines": {"toggle_a": True}})
     with pytest.raises(Exception, match="Unsupported toggle condition: "):
         resolve_toggles(data, context)
