@@ -1,7 +1,7 @@
+from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Callable, Final, Mapping
 
-from attr import frozen
 from immutables import Map
 from jinja2 import Environment, nodes
 from jinja2.compiler import CodeGenerator, EvalContext, Frame
@@ -110,7 +110,7 @@ class OpType(Enum):
     undefined = auto()
 
 
-@frozen
+@dataclass(frozen=True)
 class Op:
     name: str
     typ: OpType

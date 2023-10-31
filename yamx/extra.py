@@ -1,9 +1,9 @@
 # not very supported pieces of functionality
 
+from dataclasses import dataclass
 from distutils.util import strtobool
 from typing import Any, Dict, Optional, Set
 
-from attrs import frozen
 from jinja2 import nodes
 
 from yamx.containers.data import (
@@ -16,7 +16,7 @@ from yamx.containers.data import (
 from yamx.loader.utils import get_jinja_env
 
 
-@frozen
+@dataclass(frozen=True)
 class ResolvingContext:
     _data: Dict[str, bool]
 

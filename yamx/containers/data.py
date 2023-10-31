@@ -1,6 +1,6 @@
+from dataclasses import dataclass, replace
 from typing import Any, ClassVar, Optional, Tuple, Union
 
-from attr import evolve, frozen
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 from ruamel.yaml.tag import Tag
 
@@ -15,12 +15,12 @@ from yamx.constants import (
 CONDITIONAL_UPD_COUNTER: int = 0
 
 
-@frozen
+@dataclass(frozen=True)
 class Condition:
     raw_value: str
 
 
-@frozen
+@dataclass(frozen=True)
 class CmpValue:
     value: Any
 
@@ -31,7 +31,7 @@ class CmpValue:
             return self.value < other.value
 
 
-@frozen
+@dataclass(frozen=True)
 class ConditionalData:
     """Wrapper for loaded data"""
 
@@ -71,7 +71,7 @@ class ConditionalSeq(CommentedSeq):
         super().__init__(*args, **kw)
 
 
-@frozen
+@dataclass(frozen=True)
 class ConditionalBlock:
     yaml_tag: ClassVar[str] = CONDITIONAL_TAG
 
@@ -93,7 +93,7 @@ class ConditionalBlock:
         return cls(**data)
 
 
-@frozen
+@dataclass(frozen=True)
 class ConditionalSelectionGroup:
     condition: Optional[Condition]
     # TODO: introduce type of conditional group/ subclassing
@@ -119,7 +119,7 @@ class ConditionalSelectionGroup:
         )
 
 
-@frozen
+@dataclass(frozen=True)
 class ConditionalGroup:
     condition: Optional[Condition]
     # TODO: introduce type of conditional group/ subclassing
@@ -150,12 +150,12 @@ class ConditionalGroup:
             elif_groups = self.elif_bodies + (
                 ConditionalGroup(body=data, condition=condition),
             )
-            return evolve(self, elif_bodies=elif_groups)
+            return replace(self, elif_bodies=elif_groups)
         elif typ is ConditionalBlockType.else_:
             assert (
                 self.else_body is None
             ), f"Cannot set else_body to {self}, else_body is not empty."
-            return evolve(self, else_body=data)
+            return replace(self, else_body=data)
         else:
             raise ValueError(f"Unexpected conditional element of type {typ}")
 
