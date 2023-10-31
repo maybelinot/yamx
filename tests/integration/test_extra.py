@@ -1,6 +1,7 @@
 import io
 
 import pytest
+from ruamel.yaml import YAML
 
 from yamx import YAMX
 from yamx.extra import ResolvingContext, extract_toggles, resolve_toggles
@@ -217,10 +218,9 @@ map:
             """
 active: false
 map:
-  params: 2
   val: 1
+  params: 2
   val2: 2
-
 """,
         ),
         # conditions seq
@@ -277,6 +277,24 @@ field: value
 # {% endif %}""",
             "field: value",
         ),
+        # single field
+        (
+            """
+map:
+    # {% if defines.toggle_b %}
+    field: value
+    # {% endif %}""",
+            "map: {}",
+        ),
+        # single item
+        (
+            """
+list:
+    # {% if defines.toggle_b %}
+    - value
+    # {% endif %}""",
+            "list: []",
+        ),
     ],
 )
 def test_resolve_toggles(raw_config, expected):
@@ -285,7 +303,8 @@ def test_resolve_toggles(raw_config, expected):
 
     conditional_data = yamx.load_from_string(raw_config)
     resolved_data = resolve_toggles(conditional_data, context)
-    resolved_str = yamx.dump_to_string(resolved_data)
+    yaml = YAML(typ=["string"])
+    resolved_str = yaml.dump_to_string(resolved_data)
     assert resolved_str == expected.strip()
 
 

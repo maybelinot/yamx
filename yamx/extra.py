@@ -3,7 +3,7 @@
 from distutils.util import strtobool
 from typing import Any, Dict, Optional, Set
 
-from attrs import evolve, frozen
+from attrs import frozen
 from jinja2 import nodes
 
 from yamx.containers.data import (
@@ -113,26 +113,30 @@ def _extract_toggle_from_if_node(if_test_node: nodes.Call) -> str:
     return value
 
 
-def resolve_toggles(obj: Any, context: Dict[str, ResolvingContext]):
+def resolve_toggles(obj: Any, context: Dict[str, ResolvingContext]) -> Any:
     if isinstance(obj, ConditionalData):
-        return evolve(obj, data=resolve_toggles(obj.data, context))
+        return resolve_toggles(obj.data, context)
     elif isinstance(obj, ConditionalMap):
         res_dict = {}
         for key, val in obj.items():
             if isinstance(val, ConditionalGroup):
-                res_dict.update(resolve_toggles(val, context))
+                res_val = resolve_toggles(val, context)
+                if res_val:
+                    res_dict.update(res_val)
             else:
                 res_dict[key] = resolve_toggles(val, context)
-        return ConditionalMap(res_dict)
+        return res_dict
 
     elif isinstance(obj, ConditionalSeq):
         res_seq = []
         for item in obj:
             if isinstance(item, ConditionalGroup):
-                res_seq.extend(resolve_toggles(item, context))
+                res_item = resolve_toggles(item, context)
+                if res_item:
+                    res_seq.extend(res_item)
             else:
                 res_seq.append(resolve_toggles(item, context))
-        return ConditionalSeq(res_seq)
+        return res_seq
 
     elif isinstance(obj, ConditionalGroup):
         toggles = _extract_toggles_from_condition(obj.condition)
