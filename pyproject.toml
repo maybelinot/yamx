@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yamx"
-version = "0.1.4"
+version = "0.1.5"
 description = "YAML parser that supports jinja conditional expressions"
 
 license = "Apache-2.0"
@@ -23,8 +23,8 @@ python = ">=3.8"
 
 # Standard dependencies with semver constraints
 jinja2 = "^3.1.2"
-immutables= "^0.19"
-"ruamel.yaml" = "0.17.32"
+immutables= "^0"
+"ruamel.yaml" = "0.18.3"
 "ruamel.yaml.string" = "0.1.0"
 
 
