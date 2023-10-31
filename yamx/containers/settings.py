@@ -1,7 +1,7 @@
-from attr import frozen
+from dataclasses import dataclass
 
 
-@frozen
+@dataclass(frozen=True)
 class IndentConfig:
     mapping: int
     sequence: int
