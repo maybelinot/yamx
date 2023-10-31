@@ -223,6 +223,21 @@ map:
 
 """,
         ),
+        # conditions seq
+        (
+            """
+list:
+{% if defines.get("toggle_a") %}
+- 1
+{% endif %}
+- 2
+""",
+            """
+list:
+- 1
+- 2
+""",
+        ),
         # nested conditions seq
         (
             """
@@ -232,19 +247,18 @@ params: 1
 {% else %}
 list:
 - key: val
--
-  {% if defines.get("toggle_a") %}
-  key1: val1
-  {% endif %}
-  key2: val2
+{% if defines.get("toggle_a") %}
+- key: val1
+{% endif %}
+- key: val2
 {% endif %}
 """,
             """
 active: false
 list:
 - key: val
-- key1: val1
-  key2: val2
+- key: val1
+- key: val2
 """,
         ),
         # getitem

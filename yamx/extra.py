@@ -126,7 +126,14 @@ def resolve_toggles(obj: Any, context: Dict[str, ResolvingContext]):
         return ConditionalMap(res_dict)
 
     elif isinstance(obj, ConditionalSeq):
-        return ConditionalSeq([resolve_toggles(item, context) for item in obj])
+        res_seq = []
+        for item in obj:
+            if isinstance(item, ConditionalGroup):
+                res_seq.extend(resolve_toggles(item, context))
+            else:
+                res_seq.append(resolve_toggles(item, context))
+        return ConditionalSeq(res_seq)
+
     elif isinstance(obj, ConditionalGroup):
         toggles = _extract_toggles_from_condition(obj.condition)
 
