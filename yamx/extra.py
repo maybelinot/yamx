@@ -76,7 +76,7 @@ def _extract_toggles_from_condition(condition: Optional[Condition]) -> Set[str]:
 
 
 def _extract_toggles_from_if_node(if_test_node: nodes.Call) -> Set[str]:
-    """Current implementation supports operators `not` and `and`. 
+    """Current implementation supports operators `not` and `and`.
     Only following conditions are allowed:
 
     `defines.get("FEATURE_FLAG")`
