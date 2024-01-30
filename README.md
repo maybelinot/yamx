@@ -41,7 +41,7 @@ weapons:
 ### Extra functionality
 
 
-Some parts of the library don't have general support yet and available only as set of `extra` tools to work with specific format of condition ssuch as
+Some parts of the library don't have general support yet and available only as set of `extra` tools to work with specific format of conditions such as
 
 `defines.get("FEATURE_FLAG")`
 
