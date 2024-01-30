@@ -41,7 +41,7 @@ weapons:
 ### Extra functionality
 
 
-Some parts of the library don't have general support yet and available only as set of `extra` tools to work with specific format of conditionssuch as
+Some parts of the library don't have general support yet and available only as set of `extra` tools to work with specific format of conditions such as
 
 `defines.get("FEATURE_FLAG")`
 
@@ -56,6 +56,8 @@ Some parts of the library don't have general support yet and available only as s
 `config_flags.get("NAME")`
 
 `config_flags["NAME"]`
+
+Operations `not` and `and` are supported for them.
 
 #### Extract toggle names used in config
 

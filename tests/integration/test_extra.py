@@ -128,6 +128,23 @@ field: value
 # {% endif %}""",
             ["toggle_a"],
         ),
+        # and condition
+        (
+            """
+# {% if toggles.toggle_a and toggles.toggle_b %}
+field: value
+# {% endif %}
+            """,
+            ["toggle_a", "toggle_b"],
+        ),
+        (
+            """
+# {% if not toggles.toggle_a and config_flags.toggle_b %}
+field: value
+# {% endif %}
+            """,
+            ["toggle_a", "toggle_b"],
+        ),
     ],
 )
 def test_toggle_extraction(raw_config, expected_toggles):
@@ -312,7 +329,7 @@ def test_resolve_toggles(raw_config, expected):
     "raw_config",
     [
         """
-{% if defines.get("toggle_a") and defines.get("toggle_b") %}
+{% if defines.get("toggle_a") or defines.get("toggle_b") %}
 a: 1
 {% endif %}
 """,
