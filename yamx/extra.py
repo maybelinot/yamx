@@ -87,8 +87,11 @@ def _extract_toggles_from_if_node(if_test_node: nodes.Call) -> Set[str]:
     `config_flags.get("NAME")`
     `config_flags["NAME"]`
     """
-    # we have negation in condition
-    if isinstance(if_test_node, nodes.Not):
+    if isinstance(if_test_node, nodes.And):
+        left_toggles = _extract_toggles_from_if_node(if_test_node.left)
+        right_toggles = _extract_toggles_from_if_node(if_test_node.right)
+        return left_toggles | right_toggles
+    elif isinstance(if_test_node, nodes.Not):
         node = if_test_node.node
     else:
         node = if_test_node
