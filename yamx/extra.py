@@ -69,17 +69,14 @@ def _extract_toggles_from_condition(condition: Optional[Condition]) -> Set[str]:
     env = get_jinja_env()
     jinja_ast = env.parse(f"{{% if {condition.raw_value} %}}{{% endif %}}")
     try:
-        toggle_name = _extract_toggle_from_if_node(jinja_ast.body[0].test)
+        toggle_names = _extract_toggles_from_if_node(jinja_ast.body[0].test)
     except Exception:
         raise Exception(f"Unsupported toggle condition: {condition.raw_value}")
-    return {
-        toggle_name,
-    }
+    return toggle_names
 
 
-def _extract_toggle_from_if_node(if_test_node: nodes.Call) -> str:
-    """Current implementation supports only following conditions and their
-    negative form:
+def _extract_toggles_from_if_node(if_test_node: nodes.Call) -> Set[str]:
+    """Current implementation supports operators `not` and `and`. Only following conditions are allowed:
 
     `defines.get("FEATURE_FLAG")`
     `toggles.FEATURE_FLAG`
@@ -94,6 +91,7 @@ def _extract_toggle_from_if_node(if_test_node: nodes.Call) -> str:
         node = if_test_node.node
     else:
         node = if_test_node
+
     # direct access, e.g. toggles.NAME
     if isinstance(node, nodes.Getattr):
         name = node.node.name
@@ -110,7 +108,9 @@ def _extract_toggle_from_if_node(if_test_node: nodes.Call) -> str:
         raise Exception
 
     assert name in ["defines", "toggles", "config_flags"]
-    return value
+    return {
+        value,
+    }
 
 
 def resolve_toggles(obj: Any, context: Dict[str, ResolvingContext]) -> Any:
