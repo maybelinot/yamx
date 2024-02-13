@@ -124,7 +124,10 @@ def render_conditional_map(
 
     # TODO: move sorting to different place
     if sort_keys:
-        iter_data = enumerate(sorted(data.items(), key=lambda kv: kv[0]))
+        iter_data = enumerate(
+            # make sure to use original key for sorting
+            sorted(data.items(), key=lambda kv: kv[0].split(DEDUPLICATOR)[0])
+        )
     else:
         iter_data = enumerate(data.items())
 
@@ -135,7 +138,6 @@ def render_conditional_map(
         prev_data_key = data_key
         # to avoid keys duplication - adding unique suffix
         if DEDUPLICATOR not in data_key:
-            # TODO: replace with hash of stable length
             data_key = f"{data_key}{DEDUPLICATOR}{UNIQUE_CNT}"
             UNIQUE_CNT += 1
 
