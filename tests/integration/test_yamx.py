@@ -1,5 +1,6 @@
 import io
 from typing import Optional
+from unittest.mock import patch
 
 import pytest
 
@@ -1047,8 +1048,8 @@ def test_config_non_mutable(raw_config):
     "raw_config",
     [
         "key: !conditional 123",
-        "__deduplicator__: 123",
-        "__deduplicator_upd__: 123",
+        "__dedup__: 123",
+        "__dedup_upd__: 123",
         "____THIS_DOESN'T_EXIST____: 123",
         "__condition__0: 123",
     ],
@@ -1227,6 +1228,24 @@ list:
 def test_config_sort_keys(raw_config, expected):
     yamx = YAMX(sort_keys=True)
     _load_dump_and_compare(yamx, raw_config, expected)
+
+
+# setting UNIQUE_CNT to 9 to emulate scenario where deduplication
+# affects sorting functionality (e.g. "field__dedup__9" > "field__dedup__10")
+@patch("yamx.representer.rendering.UNIQUE_CNT", 9)
+def test_config_preserve_sorted_order_with_deduplicator():
+    yamx = YAMX(sort_keys=True)
+
+    raw_config = """
+# {% if defines.get("toggle_a") %}
+# {% if defines.get("toggle_b") %}
+field: value1
+# {% else %}
+field: value2
+# {% endif %}
+# {% endif %}
+"""
+    _load_dump_and_compare(yamx, raw_config, raw_config)
 
 
 def test_constructor_instantiation():

@@ -33,5 +33,5 @@ CONDITIONAL_KEY_PREFIX: Final[str] = "__condition__"
 CONDITIONAL_TAG: Final[str] = "conditional"
 
 # conditional key deduplication
-DEDUPLICATOR: Final[str] = "__deduplicator__"
-DEDUPLICATOR_UPD: Final[str] = "__deduplicator_upd__"
+DEDUPLICATOR: Final[str] = "__dedup__"
+DEDUPLICATOR_UPD: Final[str] = "__dedup_upd__"
