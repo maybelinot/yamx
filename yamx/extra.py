@@ -76,7 +76,7 @@ def _extract_toggles_from_condition(condition: Optional[Condition]) -> Set[str]:
 
 
 def _extract_toggles_from_if_node(if_test_node: nodes.Call) -> Set[str]:
-    """Current implementation supports operators `not` and `and`.
+    """Current implementation supports operators `not`, `and` and `or`.
     Only following conditions are allowed:
 
     `defines.get("FEATURE_FLAG")`
@@ -87,7 +87,7 @@ def _extract_toggles_from_if_node(if_test_node: nodes.Call) -> Set[str]:
     `config_flags.get("NAME")`
     `config_flags["NAME"]`
     """
-    if isinstance(if_test_node, nodes.And):
+    if isinstance(if_test_node, nodes.And) or isinstance(if_test_node, nodes.Or):
         left_toggles = _extract_toggles_from_if_node(if_test_node.left)
         right_toggles = _extract_toggles_from_if_node(if_test_node.right)
         return left_toggles | right_toggles

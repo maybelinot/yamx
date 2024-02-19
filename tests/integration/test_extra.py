@@ -145,6 +145,30 @@ field: value
             """,
             ["toggle_a", "toggle_b"],
         ),
+        (
+            """
+# {% if toggles.toggle_a or config_flags.toggle_b %}
+field: value
+# {% endif %}
+            """,
+            ["toggle_a", "toggle_b"],
+        ),
+        (
+            """
+# {% if toggles.toggle_a or config_flags.toggle_b or toggles["toggle_c"] %}
+field: value
+# {% endif %}
+            """,
+            ["toggle_a", "toggle_b", "toggle_c"],
+        ),
+        (
+            """
+# {% if toggles.toggle_a or ( config_flags.toggle_b and not toggles.get("toggle_c") ) %}
+field: value
+# {% endif %}
+            """,
+            ["toggle_a", "toggle_b", "toggle_c"],
+        ),
     ],
 )
 def test_toggle_extraction(raw_config, expected_toggles):
@@ -312,6 +336,31 @@ list:
     # {% endif %}""",
             "list: []",
         ),
+        (
+            """
+{% if defines.get("toggle_b") or defines.toggle_a %}
+params: 1
+{% endif %}
+            """,
+            "params: 1",
+        ),
+        (
+            """
+{% if defines.get("toggle_a") and not defines.toggle_b %}
+params: 1
+{% endif %}
+            """,
+            "params: 1",
+        ),
+        (
+            """
+params: 1
+{% if not defines.get("toggle_a") or defines.toggle_b %}
+params: 2
+{% endif %}
+            """,
+            "params: 1",
+        ),
     ],
 )
 def test_resolve_toggles(raw_config, expected):
@@ -329,7 +378,7 @@ def test_resolve_toggles(raw_config, expected):
     "raw_config",
     [
         """
-{% if defines.get("toggle_a") or defines.get("toggle_b") %}
+{% if not ( defines.get("toggle_a") and defines.get("toggle_b") ) %}
 a: 1
 {% endif %}
 """,
