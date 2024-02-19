@@ -1,7 +1,6 @@
 # not very supported pieces of functionality
 
 from dataclasses import dataclass
-from distutils.util import strtobool
 from typing import Any, Dict, Optional, Set
 
 from jinja2 import nodes
@@ -14,6 +13,7 @@ from yamx.containers.data import (
     ConditionalSeq,
 )
 from yamx.loader.utils import get_jinja_env
+from yamx.utils import strtobool
 
 
 @dataclass(frozen=True)
