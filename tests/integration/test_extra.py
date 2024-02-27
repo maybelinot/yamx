@@ -163,7 +163,7 @@ field: value
         ),
         (
             """
-# {% if toggles.toggle_a or ( config_flags.toggle_b and not toggles.get("toggle_c") ) %}
+# {% if toggles.toggle_a or not ( config_flags.toggle_b and toggles.get("toggle_c") ) %}
 field: value
 # {% endif %}
             """,
@@ -361,6 +361,15 @@ params: 2
             """,
             "params: 1",
         ),
+        (
+            """
+params: 1
+{% if not ( defines.get("toggle_a") or defines.toggle_b ) %}
+params: 2
+{% endif %}
+            """,
+            "params: 1",
+        ),
     ],
 )
 def test_resolve_toggles(raw_config, expected):
@@ -377,11 +386,6 @@ def test_resolve_toggles(raw_config, expected):
 @pytest.mark.parametrize(
     "raw_config",
     [
-        """
-{% if not ( defines.get("toggle_a") and defines.get("toggle_b") ) %}
-a: 1
-{% endif %}
-""",
         """
 {% if context.get("toggle_a") %}
 a: 1

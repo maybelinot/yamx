@@ -87,17 +87,19 @@ def _extract_toggles_from_if_node(if_test_node: nodes.Call) -> Set[str]:
     `config_flags.get("NAME")`
     `config_flags["NAME"]`
     """
-    if isinstance(if_test_node, nodes.And) or isinstance(if_test_node, nodes.Or):
-        left_toggles = _extract_toggles_from_if_node(if_test_node.left)
-        right_toggles = _extract_toggles_from_if_node(if_test_node.right)
-        return left_toggles | right_toggles
-    elif isinstance(if_test_node, nodes.Not):
+    if isinstance(if_test_node, nodes.Not):
         node = if_test_node.node
     else:
         node = if_test_node
 
+    if isinstance(node, nodes.And) or isinstance(node, nodes.Or):
+        left_toggles = _extract_toggles_from_if_node(node.left)
+        right_toggles = _extract_toggles_from_if_node(node.right)
+        return left_toggles | right_toggles
+    elif isinstance(node, nodes.Not):
+        return _extract_toggles_from_if_node(node)
     # direct access, e.g. toggles.NAME
-    if isinstance(node, nodes.Getattr):
+    elif isinstance(node, nodes.Getattr):
         name = node.node.name
         value = node.attr
     # getitem access, e.g. toggles[]
