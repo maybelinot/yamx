@@ -143,10 +143,10 @@ def _process_conditions(
     raw_data: str, typ: ConditionalBlockType, condition: Optional[Condition] = None
 ) -> str:
     """
-    # here we rely on the fact that yaml structure is valid and we can:
-    # * load it with YAML loader
-    # * set dynamically generated tags based on conditions
-    # * dump it back to string form
+    here we rely on the fact that yaml structure is valid and we can:
+    * load it with YAML loader
+    * set dynamically generated tags based on conditions
+    * dump it back to string form
     """
     global UNIQUE_CONDITION_CNT
     yaml_data = yaml.load(raw_data)
@@ -177,6 +177,9 @@ def _process_conditions(
     elif isinstance(yaml_data, CommentedSeq):
         # similar structure is created for list fields
         res_yaml_data = [data]
+    elif yaml_data is None:
+        del data["data"]
+        res_yaml_data = data
     else:
         # TODO: support simple scalars
         raise NotImplementedError(

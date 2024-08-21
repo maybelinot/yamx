@@ -4,7 +4,7 @@ import pytest
 from ruamel.yaml import YAML
 
 from yamx import YAMX
-from yamx.extra import ResolvingContext, extract_toggles, resolve_toggles
+from yamx.extra import ResolvingContext, extract_toggles, resolve_toggles, sort_logical
 
 
 @pytest.mark.parametrize(
@@ -399,3 +399,242 @@ def test_resolve_failed(raw_config):
     context = ResolvingContext({"defines": {"toggle_a": True}})
     with pytest.raises(Exception, match="Unsupported toggle condition: "):
         resolve_toggles(data, context)
+
+
+@pytest.mark.parametrize(
+    "config, input_dict, res_dict",
+    [
+        # root key sort
+        (
+            {(): {"key_order": ["b", "a"]}},
+            """
+a: 2
+b: 1
+""",
+            """
+b: 1
+a: 2
+""",
+        ),
+        # nested dict key sort
+        (
+            {("nested1", "nested2", "nested3"): {"key_order": ["b", "a"]}},
+            """
+nested1:
+  nested2:
+    nested3:
+      a: 2
+      b: 1
+""",
+            """
+nested1:
+  nested2:
+    nested3:
+      b: 1
+      a: 2
+""",
+        ),
+        # nested list key sort
+        (
+            {("[]", "nested", "[]"): {"key_order": ["b", "a"]}},
+            """
+- nested:
+  - a: 2
+    b: 1
+""",
+            """
+- nested:
+  - b: 1
+    a: 2
+""",
+        ),
+        # root item sort
+        (
+            {(): {"item_order": [{"key": "a"}]}},
+            """
+- a: 2
+- a: 1
+""",
+            """
+- a: 1
+- a: 2
+""",
+        ),
+        # root item sort by 2 keys
+        (
+            {(): {"item_order": [{"key": "a"}, {"key": "b"}]}},
+            """
+- a: 2
+  b: 2
+- b: 1
+  a: 2
+- a: 1
+  b: 2
+- a: 1
+  b: 1
+""",
+            """
+- a: 1
+  b: 1
+- a: 1
+  b: 2
+- b: 1
+  a: 2
+- a: 2
+  b: 2
+""",
+        ),
+        # nested item sort
+        (
+            {("nested", "[]", "nested1"): {"item_order": [{"key": "a"}]}},
+            """
+nested:
+- nested1:
+  - a: 2
+  - a: 1
+""",
+            """
+nested:
+- nested1:
+  - a: 1
+  - a: 2
+""",
+        ),
+        # item sort with nested key
+        (
+            {(): {"item_order": [{"key": ("a", "b")}]}},
+            """
+- a:
+    b: 2
+- a:
+    b: 1
+""",
+            """
+- a:
+    b: 1
+- a:
+    b: 2
+""",
+        ),
+        # key sort with conditional blocks
+        (
+            {("[]",): {"key_order": ["a", "b"]}},
+            """
+- b: 1
+  a: 1
+# {% if defines.get("toggle") %}
+- b: 2
+  a: 2
+# {% else %}
+- b: 3
+  a: 3
+# {% endif %}
+""",
+            """
+- a: 1
+  b: 1
+# {% if defines.get("toggle") %}
+- a: 2
+  b: 2
+# {% else %}
+- a: 3
+  b: 3
+# {% endif %}
+""",
+        ),
+        # key sort with nested conditional blocks
+        (
+            {("[]", "nested"): {"key_order": ["a", "b"]}},
+            """
+- nested:
+    b: 1
+    a: 1
+# {% if defines.get("toggle") %}
+- nested:
+    # {% if defines.get("toggle1") %}
+    b: 2
+    a: 2
+    # {% else %}
+    b: 3
+    a: 3
+    # {% endif %}
+# {% endif %}
+""",
+            """
+- nested:
+    a: 1
+    b: 1
+# {% if defines.get("toggle") %}
+- nested:
+    # {% if defines.get("toggle1") %}
+    a: 2
+    b: 2
+    # {% else %}
+    a: 3
+    b: 3
+    # {% endif %}
+# {% endif %}
+""",
+        ),
+        # key sort with conditional blocks
+        (
+            {("nested",): {"key_order": ["a", "b", "c", "d"]}},
+            """
+nested:
+  c: 1
+  # {% if defines.get("toggle") %}
+  d: 3
+  a: 2
+  # {% else %}
+  a: 3
+  # {% endif %}
+  b: 1
+""",
+            """
+nested:
+  # {% if defines.get("toggle") %}
+  a: 2
+  d: 3
+  # {% else %}
+  a: 3
+  # {% endif %}
+  b: 1
+  c: 1
+""",
+        ),
+        # item sort with conditional blocks
+        (
+            {("nested",): {"item_order": [{"key": "a"}]}},
+            """
+nested:
+- a: 3
+# {% if defines.get("toggle") %}
+- a: 5
+- a: 2
+# {% else %}
+- a: 6
+- a: 4
+# {% endif %}
+- a: 1
+""",
+            """
+nested:
+- a: 1
+# {% if defines.get("toggle") %}
+- a: 2
+- a: 5
+# {% else %}
+- a: 4
+- a: 6
+# {% endif %}
+- a: 3
+""",
+        ),
+    ],
+)
+def test_sort_logical(config, input_dict, res_dict):
+    yamx = YAMX(sort_keys=False)
+    data = yamx.load_from_string(input_dict)
+    sorted_data = sort_logical(data, config)
+    resolved_str = yamx.dump_to_string(sorted_data)
+    assert resolved_str == res_dict.strip()
