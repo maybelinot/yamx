@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
@@ -72,7 +72,7 @@ def _render_map_comments(
     :param sort_keys: {bool}
     """
     cm = CommentedMap()
-    conditional_kwargs: Dict[str, Any] = {
+    conditional_kwargs: dict[str, Any] = {
         "indent": indent,
         "indent_cfg": indent_cfg,
         **kwargs,
@@ -103,8 +103,8 @@ def _render_map_comments(
 
         if_comment = IF_CONDITION_TEMPLATE.format(conditional_group.condition.raw_value)
 
-        to_render: List[
-            Tuple[Union[ConditionalMap, ConditionalSeq], Optional[str], Optional[str]]
+        to_render: list[
+            tuple[Union[ConditionalMap, ConditionalSeq], Optional[str], Optional[str]]
         ] = []
 
         # in case we have only if body
@@ -188,7 +188,7 @@ def _render_seq_comments(
     """
     cs = CommentedSeq()
 
-    conditional_kwargs: Dict[str, Any] = {
+    conditional_kwargs: dict[str, Any] = {
         "indent": indent,
         "indent_cfg": indent_cfg,
         **kwargs,
@@ -221,8 +221,8 @@ def _render_seq_comments(
 
         if_comment = IF_CONDITION_TEMPLATE.format(conditional_group.condition.raw_value)
 
-        to_render: List[
-            Tuple[Union[ConditionalMap, ConditionalSeq], Optional[str], Optional[str]]
+        to_render: list[
+            tuple[Union[ConditionalMap, ConditionalSeq], Optional[str], Optional[str]]
         ] = []
         # in case we have only if body
         if conditional_group.else_body is None and not conditional_group.elif_bodies:

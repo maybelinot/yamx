@@ -1,6 +1,7 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Callable, Final, Mapping
+from typing import Callable, Final
 
 from immutables import Map
 from jinja2 import Environment, nodes
@@ -28,7 +29,7 @@ class CustomCodeGenerator(CodeGenerator):
 
     def visit_Const(self, node, frame):
         if isinstance(node.value, str):
-            self.write('"{}"'.format(node.value))
+            self.write(f'"{node.value}"')
         else:
             super().visit_Const(node, frame)
 

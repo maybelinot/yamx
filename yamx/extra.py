@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Dict, Final, List, Optional, Set, Tuple, Union
+from typing import Any, Final, Optional, Union
 
 from jinja2 import nodes
 
@@ -22,7 +22,7 @@ LIST_SYMBOL: Final[str] = "[]"
 
 @dataclass(frozen=True)
 class ResolvingContext:
-    _data: Dict[str, bool]
+    _data: dict[str, bool]
 
     def __getattr__(self, attr_name):
         if attr_name in self._data:
@@ -42,7 +42,7 @@ class ResolvingContext:
         return self._data.keys()
 
 
-def extract_toggles(obj: Any) -> Set[str]:
+def extract_toggles(obj: Any) -> set[str]:
     toggles = set()
     if isinstance(obj, ConditionalData):
         return extract_toggles(obj.data)
@@ -64,7 +64,7 @@ def extract_toggles(obj: Any) -> Set[str]:
     return toggles
 
 
-def _extract_toggles_from_condition(condition: Optional[Condition]) -> Set[str]:
+def _extract_toggles_from_condition(condition: Optional[Condition]) -> set[str]:
     """This method works only for particular condition format
     see _extract_toggle_from_if_node for exact logic definition
     """
@@ -79,7 +79,7 @@ def _extract_toggles_from_condition(condition: Optional[Condition]) -> Set[str]:
     return toggle_names
 
 
-def _extract_toggles_from_if_node(node: nodes.Call) -> Set[str]:
+def _extract_toggles_from_if_node(node: nodes.Call) -> set[str]:
     """Current implementation supports operators `not`, `and` and `or`.
     Only following conditions are allowed:
 
@@ -118,7 +118,7 @@ def _extract_toggles_from_if_node(node: nodes.Call) -> Set[str]:
     }
 
 
-def resolve_toggles(obj: Any, context: Dict[str, ResolvingContext]) -> Any:
+def resolve_toggles(obj: Any, context: dict[str, ResolvingContext]) -> Any:
     if isinstance(obj, ConditionalData):
         return resolve_toggles(obj.data, context)
     elif isinstance(obj, ConditionalMap):
@@ -165,7 +165,7 @@ def resolve_toggles(obj: Any, context: Dict[str, ResolvingContext]) -> Any:
 
 
 def resolve_condition(
-    condition: Condition, context: Dict[str, ResolvingContext]
+    condition: Condition, context: dict[str, ResolvingContext]
 ) -> bool:
     """Resolve condition to boolean value"""
     env = get_jinja_env()
@@ -179,12 +179,12 @@ def resolve_condition(
     return bool(strtobool(resolved))
 
 
-def _config_by_key(config: Dict, key: str):
+def _config_by_key(config: dict, key: str):
     """Select sorting config specific to processed key"""
     return {k[1:]: v for k, v in config.items() if len(k) and k[0] == key}
 
 
-def _extract_item_by_key(obj, key: Union[Tuple[str, ...], str]):
+def _extract_item_by_key(obj, key: Union[tuple[str, ...], str]):
     """Extract item by key"""
     # in case item is represented by conditional group - process "if" closure only
     if isinstance(obj, ConditionalGroup):
@@ -227,7 +227,7 @@ def _extract_item_by_key(obj, key: Union[Tuple[str, ...], str]):
         raise ValueError(f"Unsupported object type: {type(obj)}")
 
 
-def _key_order(key_value: Tuple[str, Any], key_order: List[str]) -> Any:
+def _key_order(key_value: tuple[str, Any], key_order: list[str]) -> Any:
     """Return order index of a key key/value pair"""
     key, value = key_value
     if key.startswith(CONDITIONAL_KEY_PREFIX) and isinstance(value, ConditionalGroup):

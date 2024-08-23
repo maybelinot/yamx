@@ -1,5 +1,5 @@
 import io
-from typing import Dict, List, Optional, Union
+from typing import Optional, Union
 
 from jinja2 import nodes
 from ruamel.yaml import YAML
@@ -167,7 +167,7 @@ def _process_conditions(
     )
     data.yaml_set_ctag(Tag(suffix=CONDITIONAL_TAG))
 
-    res_yaml_data: Union[Dict[str, CommentedMap], List[CommentedMap]]
+    res_yaml_data: Union[dict[str, CommentedMap], list[CommentedMap]]
     if isinstance(yaml_data, CommentedMap):
         # create unique key to separate conditional block from other fields
         key = f"{CONDITIONAL_KEY_PREFIX}{UNIQUE_CONDITION_CNT}"
