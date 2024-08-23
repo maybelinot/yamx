@@ -552,8 +552,10 @@ nested:
 # {% if defines.get("toggle") %}
 - nested:
     # {% if defines.get("toggle1") %}
+    # {% if defines.get("toggle1") %}
     b: 2
     a: 2
+    # {% endif %}
     # {% else %}
     b: 3
     a: 3
@@ -567,8 +569,10 @@ nested:
 # {% if defines.get("toggle") %}
 - nested:
     # {% if defines.get("toggle1") %}
+    # {% if defines.get("toggle1") %}
     a: 2
     b: 2
+    # {% endif %}
     # {% else %}
     a: 3
     b: 3
