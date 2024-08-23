@@ -201,7 +201,7 @@ def _annotate_commented_map_scalar_item(
     mark = CommentMark(indent)
     before_comment = before and CommentToken(f"# {before}\n", mark)
     # NOTE: comment is prefixed with new line as it is attached after value
-    after_comment = after and CommentToken(f"\n{' '*indent}# {after}", mark)
+    after_comment = after and CommentToken(f"\n{' ' * indent}# {after}", mark)
 
     prev_ca = commented_data.ca.items.get(data_key)
     # item could be already annotated, let's extract the comments and merge them
@@ -235,7 +235,7 @@ def _set_after_map_comment(cm, after: str, indent: int) -> None:
     """Recursively propagates after comment to the last map item"""
     # in case CommentedMap is empty - attaching comment to cm.ca
     mark = CommentMark(indent)
-    after_comment = CommentToken(f"\n{' '*indent}# {after}", mark)
+    after_comment = CommentToken(f"\n{' ' * indent}# {after}", mark)
 
     if len(cm) == 0:
         cm.ca.comment = [after_comment, []]
@@ -510,7 +510,7 @@ def _annotate_commented_seq_scalar_item(
     mark = CommentMark(indent)
     before_comment = before and CommentToken(f"# {before}\n", mark)
     # NOTE: comment is prefixed with new line as it is attached after value
-    after_comment = after and CommentToken(f"\n{' '*indent}# {after}", mark)
+    after_comment = after and CommentToken(f"\n{' ' * indent}# {after}", mark)
 
     prev_ca = cs.ca.items.get(item_idx)
     # item could be already annotated, let's extract the comments and merge them

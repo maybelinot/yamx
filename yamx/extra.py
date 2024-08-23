@@ -179,66 +179,96 @@ def resolve_condition(
     return bool(strtobool(resolved))
 
 
-def _config_by_key(config: dict, key: str):
-    """Select sorting config specific to processed key"""
-    return {k[1:]: v for k, v in config.items() if len(k) and k[0] == key}
+###########################################################
+#                  SORT_CONFIG explained                  #
+###########################################################
+# SORT_CONFIG is a dictionary that defines the sorting order for the keys in the YAML file.
+#
+# The keys in the dictionary are tuples that represent the path to the key in the YAML file.
+# e.g. {("key1", "key2",): ...}
+#
+# The value is another dictionary that defines the sorting order for dictionary or list under
+# the key.
+# if element under given key represents a dictionary
+# "key_order" key is used to define the order of keys in the dictionary.
+#
+# EXAMPLE 1
+#
+# if SORT_CONFIG is {("key1", "key2",): {"key_order": ["key3", "key4"]}}
+# final config will have the order according to the key_order list:
+# {
+#   "key1": {
+#     "key2": {
+#       "key3": ...,
+#       "key4": ...
+#     }
+#   }
+# }
 
+# list object can be denoted by "[]" symbol in the key tuple
+#
+# EXAMPLE 2
+#
+# if SORT_CONFIG is {("key1", "[]"): {"key_order": ["key3", "key4"]}}
+# final config will have the order according to the key_order list:
+# {
+#   "key1": [
+#     {
+#       "key3": ...,
+#       "key4": ...
+#     }
+#   ]
+# }
 
-def _extract_item_by_key(obj, key: Union[tuple[str, ...], str]):
-    """Extract item by key"""
-    # in case item is represented by conditional group - process "if" closure only
-    if isinstance(obj, ConditionalGroup):
-        # if conditional group is list-like, define it's order by the first item only
-        if isinstance(obj.body, ConditionalSeq):
-            return _extract_item_by_key(obj.body[0], key)
-        return _extract_item_by_key(obj.body, key)
+# NOTE: if dictionary is represented by toggled group - first key of "if" body is used to
+# represent the order of the whole group
 
-    if not isinstance(key, str) and len(key) == 1:
-        key = key[0]
+# if element in json file that is being sorted under given key represents a list
+# "item_order" key is used to define the order of items in the list.
+# "item_order" list can contain strings or tuples. If tuple is used, it represents a key in
+# the dictionary.
 
-    if isinstance(key, str):
-        # process simple keys
-        if not isinstance(obj, ConditionalMap):
-            raise ValueError(
-                f"Key {key} defined in object which is not a ConditionalMap: {obj}"
-            )
-        if key not in obj:
-            for v in obj.values():
-                if isinstance(v, ConditionalGroup):
-                    try:
-                        return _extract_item_by_key(v, key)
-                    except Exception:
-                        continue
-        else:
-            return obj[key]
-        raise KeyError(f"Key '{key}' not found in object: {obj}")
-
-    # process complex keys
-    if isinstance(obj, ConditionalMap):
-        try:
-            return _extract_item_by_key(obj[key[0]], key[1:])
-        except KeyError:
-            return None
-    elif isinstance(obj, ConditionalSeq):
-        if key[0] == LIST_SYMBOL:
-            return [item[key[1]] for item in obj]
-        return obj[key]
-    else:
-        raise ValueError(f"Unsupported object type: {type(obj)}")
-
-
-def _key_order(key_value: tuple[str, Any], key_order: list[str]) -> Any:
-    """Return order index of a key key/value pair"""
-    key, value = key_value
-    if key.startswith(CONDITIONAL_KEY_PREFIX) and isinstance(value, ConditionalGroup):
-        # if first item is toggled, get the first key of the group
-        # NOTE: assuming that nested dict is already sorted
-        # NOTE: assuming that `value.body` is always a ConditionalMap
-        return _key_order(next(iter(value.body.items())), key_order)
-    elif key in key_order:
-        return key_order.index(key)
-    else:
-        return len(key_order)
+#
+# EXAMPLE 3
+#
+# if SORT_CONFIG is
+# {
+#   ("key1",): {
+#     "item_order": [
+#       {
+#         "key": "key3"
+#       },
+#       {
+#         "key": ("key4", "value")
+#       }
+#     ]
+#   }
+# }
+# the logic behind the definition is following:
+# - sort items in the list under key "key1"
+#  - first sort by "key3"
+#  - then sort by "value" of "key4"
+# final config will have the order according to the item_order list:
+# {
+#   "key1": [
+#     {
+#       "key2": 1,
+#       "key3": {"value": 3}
+#     },
+#     {
+#       "key2": 1,
+#       "key3": {"value": 4}
+#     },
+#     {
+#       "key2": 2,
+#       "key3": {"value": 1}
+#     },
+#     {
+#       "key2": 2,
+#       "key3": {"value": 2}
+#     },
+#   ]
+# }
 
 
 def sort_logical(obj: Any, config: dict) -> Any:
@@ -320,3 +350,65 @@ def sort_logical(obj: Any, config: dict) -> Any:
         )
     else:
         return obj
+
+
+def _config_by_key(config: dict, key: str):
+    """Select sorting config specific to processed key"""
+    return {k[1:]: v for k, v in config.items() if len(k) and k[0] == key}
+
+
+def _extract_item_by_key(obj, key: Union[tuple[str, ...], str]):
+    """Extract item by key"""
+    # in case item is represented by conditional group - process "if" closure only
+    if isinstance(obj, ConditionalGroup):
+        # if conditional group is list-like, define it's order by the first item only
+        if isinstance(obj.body, ConditionalSeq):
+            return _extract_item_by_key(obj.body[0], key)
+        return _extract_item_by_key(obj.body, key)
+
+    if not isinstance(key, str) and len(key) == 1:
+        key = key[0]
+
+    if isinstance(key, str):
+        # process simple keys
+        if not isinstance(obj, ConditionalMap):
+            raise ValueError(
+                f"Key {key} defined in object which is not a ConditionalMap: {obj}"
+            )
+        if key not in obj:
+            for v in obj.values():
+                if isinstance(v, ConditionalGroup):
+                    try:
+                        return _extract_item_by_key(v, key)
+                    except Exception:
+                        continue
+        else:
+            return obj[key]
+        raise KeyError(f"Key '{key}' not found in object: {obj}")
+
+    # process complex keys
+    if isinstance(obj, ConditionalMap):
+        try:
+            return _extract_item_by_key(obj[key[0]], key[1:])
+        except KeyError:
+            return None
+    elif isinstance(obj, ConditionalSeq):
+        if key[0] == LIST_SYMBOL:
+            return [item[key[1]] for item in obj]
+        return obj[key]
+    else:
+        raise ValueError(f"Unsupported object type: {type(obj)}")
+
+
+def _key_order(key_value: tuple[str, Any], key_order: list[str]) -> Any:
+    """Return order index of a key key/value pair"""
+    key, value = key_value
+    if key.startswith(CONDITIONAL_KEY_PREFIX) and isinstance(value, ConditionalGroup):
+        # if first item is toggled, get the first key of the group
+        # NOTE: assuming that nested dict is already sorted
+        # NOTE: assuming that `value.body` is always a ConditionalMap
+        return _key_order(next(iter(value.body.items())), key_order)
+    elif key in key_order:
+        return key_order.index(key)
+    else:
+        return len(key_order)
