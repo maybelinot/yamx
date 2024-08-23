@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yamx"
-version = "0.1.8"
+version = "0.1.9"
 description = "YAML parser that supports jinja conditional expressions"
 
 license = "Apache-2.0"
@@ -19,7 +19,7 @@ keywords = ["yaml", "jinja", "language"]
 
 [tool.poetry.dependencies]
 # Compatible Python versions
-python = ">=3.8"
+python = ">=3.9"
 
 # Standard dependencies with semver constraints
 jinja2 = "^3.1.2"

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, replace
-from typing import Any, ClassVar, Optional, Tuple, Union
+from typing import Any, ClassVar, Optional, Union
 
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 from ruamel.yaml.tag import Tag
@@ -100,7 +100,7 @@ class ConditionalSelectionGroup:
     # TODO: support scalars
     body: Any
     # elif_bodies is None to identify elif nodes that have only body filled
-    elif_bodies: Tuple["ConditionalSelectionGroup", ...] = tuple()
+    elif_bodies: tuple["ConditionalSelectionGroup", ...] = tuple()
     else_body: Any = None
 
     def to_conditional_group(self, key: str) -> "ConditionalGroup":
@@ -126,7 +126,7 @@ class ConditionalGroup:
     # TODO: support scalars
     body: Union[ConditionalMap, ConditionalSeq]
     # elif_bodies is None to identify elif nodes that have only body filled
-    elif_bodies: Tuple["ConditionalGroup", ...] = tuple()
+    elif_bodies: tuple["ConditionalGroup", ...] = tuple()
     else_body: Optional[Union[ConditionalMap, ConditionalSeq]] = None
 
     def __lt__(self, other) -> bool:
